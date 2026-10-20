@@ -1,0 +1,25 @@
+# node (descargador)
+node_modules/
+*.log
+
+# python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# secretos y datos (licencia StatsBomb: solo para la competencia)
+.env
+.env.*
+!.env.example
+data/
+!data/README.md
+
+# next (más adelante)
+web/node_modules/
+web/.next/
+web/out/
+
+.DS_Store

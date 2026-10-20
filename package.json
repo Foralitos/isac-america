@@ -1,0 +1,14 @@
+{
+  "name": "isac-america",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "download": "tsx scripts/download.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "dotenv": "^18.0.8",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}
