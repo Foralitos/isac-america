@@ -10,6 +10,7 @@ dependencies = [
     "duckdb>=1.1",
     "numpy>=2",
     "python-dotenv>=1.0",
+    "pymongo>=4.19.0",
 ]
 
 [project.optional-dependencies]

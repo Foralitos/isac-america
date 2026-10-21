@@ -1,7 +1,7 @@
 # isac-america
 
 Reto "La historia de un entrenador a través de los datos" del hackathon ISAC 2026 (ITAM + Club América).
-Técnico: **Guillermo Almada** (Pachuca ene 2022 → may 2025, 139 partidos; América 2026/27).
+Técnico: **Guillermo Almada**, todos sus partidos en la Liga MX: Santos (Ap 2021, 20), Pachuca (2022–2025, 139) y América (Ap 2026, 11). El equipo es un escenario más.
 Datos: API de Hudl StatsBomb, Liga MX completa (1,807 partidos). Uso exclusivo para la competencia, no se publican.
 
 Entrega: jueves 22 de octubre de 2026. Entregables: reporte HTML (dashboard Next + HTML estático de respaldo) y video de 5 min.
@@ -12,7 +12,8 @@ Entrega: jueves 22 de octubre de 2026. Entregables: reporte HTML (dashboard Next
 yarn download   (TS)      data/raw/          JSON crudo de la API (eventos en .json.gz)
 isac build      (Python)  data/processed/    tablas planas parquet: partidos, eventos, stats, contexto
 isac metrics    (Python)  data/processed/    métricas por bloque x escenario
-isac export     (Python)  data/out/          JSON por celda, solo agregados, lo lee web/
+isac export     (Python)  data/out/          JSON por celda, solo agregados
+isac publish    (Python)  MongoDB Atlas      sube data/out a la base isac_america (lo lee web/)
 web/            (Next)    dashboard          (pendiente)
 ```
 
@@ -31,6 +32,7 @@ src/isac/
                          transición, fase de presión, zonas
   metrics/               un módulo por bloque: offense, defense, transitions, set_pieces, players
   export/                agrega por escenario x bloque y escribe data/out/*.json
+analysis/FINDINGS.md     hallazgos redactados (cifra, definición, decisión); los parsea `isac export` → findings.json
 notebooks/               exploración (no se importa desde src)
 tests/                   smoke tests de definiciones y contexto
 data/                    ignorado por git (ver data/README.md)
@@ -44,6 +46,10 @@ fase (regular / play-in / liguilla, ida-vuelta y global) · rival (top 6 vs rest
 ## Bloques (columnas)
 
 ofensiva · defensiva y presión · transiciones · balón parado · jugadores y cambios.
+
+## Estado (2026-10-20)
+
+Pipeline completo y validado contra StatsBomb (`data/processed/metrics/validation.csv`). `make all` tarda ~3 min. Pendiente: `web/` (Next), `report.html`, video.
 
 ## Setup
 

@@ -1,59 +1,67 @@
-# Framework analítico — Almada / Pachuca
+# Framework analítico — Guillermo Almada en la Liga MX (2021 → 2026)
 
-> Se escribe antes de calcular. Toda métrica y gráfica cita la definición que usa (D-xx).
+> Escrito antes de calcular. Toda métrica, tabla y gráfica cita la definición que usa (D-xx / M-x).
 > Si una definición cambia, cambia aquí y se recalcula todo. Nada se define en el código sin estar aquí.
+> Cada JSON exportado lleva `definitions: [...]` con los IDs que usa.
 
 ## 0. Alcance y límites
 
-- Equipo y técnico: Pachuca con Guillermo Almada, ene 2022 → may 2025 (139 partidos). Capítulo opcional: América 2026/27.
-- Fuente: eventos StatsBomb v11, alineaciones v5, Team Match Stats v4. Sin 360.
-- Línea base: toda la Liga MX 2021/22 → 2025/26 (percentiles por partido).
-- Límites: (pendiente)
+- **Objeto**: el técnico Guillermo Almada, en todos los partidos de Liga MX con datos: Santos Laguna (Apertura 2021, 20 partidos), Pachuca (Clausura 2022 → Clausura 2025, 139) y América (Apertura 2026 en curso, 11). El equipo es un escenario más (D-26b); el perfil principal es del técnico.
+- **Fuente**: Hudl StatsBomb — eventos v11, alineaciones v5, Team Match Stats v4, Player Match Stats v8. Cancha 120 × 80, cada equipo ataca hacia x = 120 en sus propios eventos. **Sin datos 360**: no hay posiciones de los jugadores sin balón; la estructura defensiva se infiere de las acciones, no de la formación en vivo.
+- **Línea base**: toda la Liga MX con datos, 2021/22 → 2025/26 (1,807 partidos, 3,614 partido-equipo). Percentiles calculados sobre medias por equipo-torneo (≈ 180 unidades) salvo que se indique otra cosa.
+- **Límites declarados**: (1) las métricas de StatsBomb (xG, OBV, PPDA) se usan como vienen y se citan como suyas; (2) nuestras definiciones propias (D-02, D-05, D-05b, D-07, D-14, D-23) tienen umbrales elegidos a mano y se reportan con ellos; (3) un partido es una muestra chica: todo corte por contexto reporta `n` partidos y minutos; (4) no hay inferencia causal: "cuando pasa X, Almada hace Y" describe, no explica.
 
 ## 1. Unidades de juego
 
-| ID | Término | Definición | Umbral / supuesto |
-|---|---|---|---|
-| D-01 | Posesión | | |
-| D-02 | Secuencia ofensiva | | |
-| D-03 | Transición ofensiva | | |
-| D-04 | Transición defensiva | | |
-| D-05 | Fase de presión | | |
-| D-06 | Contrapresión | | |
-| D-07 | Balón parado (tipos) | | |
+| ID | Término | Definición | Umbral / regla | Implementa |
+|---|---|---|---|---|
+| D-01 | Posesión | Conjunto de eventos con el mismo número `possession` (segmentación de StatsBomb). El equipo en posesión es `possession_team`. Se descartan las posesiones sin ningún evento con balón (Pass, Carry, Dribble, Shot). | — | `isac.framework.possession` |
+| D-02 | Secuencia ofensiva | Posesión (D-01) del equipo con ≥ 3 eventos con balón, o que termina en tiro. Zona de inicio = tercio (D-10) y carril (D-11) del primer evento con balón. **Secuencia peligrosa** = alguna acción en el último tercio (`location_bucket = final_third`) o termina en tiro. **Secuencia con tiro** = contiene un Shot. | 3 eventos; último tercio x ≥ 80 | `isac.framework.sequences` |
+| D-03 | Transición ofensiva | Eventos del equipo en posesión marcados por StatsBomb con `is_transition = True` (tramo posterior a una recuperación en juego abierto, antes de que la posesión sea "controlada", `is_controlled_possession`). **Conversión de transición** (propia) = tiros en transición ÷ recuperaciones en juego abierto. Ventana propia complementaria para "tiro rápido": tiro dentro de 10 s de una recuperación (Ball Recovery exitosa, Interception, Duel ganado). | 10 s | `isac.framework.transitions` |
+| D-04 | Transición defensiva | D-03 aplicada al rival. **Vulnerabilidad** = tiros y xG del rival dentro de 10 s de una pérdida nuestra (Dispossessed, Miscontrol, pase incompleto o interceptado, Dribble fallido, pérdida en duelo). | 10 s | `isac.framework.transitions` |
+| D-05 | Fase de presión | ≥ 2 eventos `Pressure` del equipo sin posesión, consecutivos con ≤ 5 s entre uno y otro, dentro de la misma posesión rival. Altura = media de x de sus presiones: **alta** x̄ ≥ 80, **media** 40 ≤ x̄ < 80, **baja** x̄ < 40. **Éxito** = el equipo recupera el balón (Ball Recovery sin `recovery_failure`, Interception, Duel ganado, o la posesión rival termina sin tiro) dentro de 5 s del último Pressure de la fase. | 2 presiones; 5 s | `isac.framework.pressing` |
+| D-05b | PPDA propio | Pases completados del rival en sus 60 % defensivos (x < 72 en sus coordenadas) ÷ acciones defensivas nuestras en esa misma franja (en nuestras coordenadas x > 48): Pressure, Duel de tipo Tackle, Interception, Foul Committed. Menor = presión más intensa. Se valida contra `team_match_ppda` de StatsBomb (`isac.metrics.validate`): r = 0.95 en toda la liga, con nivel ~25 % mayor porque StatsBomb cuenta más acciones defensivas. | x < 72 rival ⇔ x > 48 propio | `isac.framework.pressing` |
+| D-06 | Contrapresión | Evento `Pressure` marcado por StatsBomb con `counterpress = True` (presión dentro de 5 s de una pérdida propia; así coincide con `team_match_counterpressures`). **Regain** = recuperación dentro de 5 s de la contrapresión. | 5 s | `isac.framework.pressing` |
+| D-07 | Balón parado | Tipos: córner, tiro libre (directo si el tiro es el propio tiro libre: `shot.type = Free Kick`; indirecto si el tiro llega después), penal, **saque de banda en zona de peligro** (saque con x ≥ 80). Evento de BP = `set_piece_phase ∈ {1, 2}` (primera o segunda fase según StatsBomb) o `play_pattern ∈ {From Corner, From Free Kick, From Throw In}` dentro de la misma posesión. Tiro de BP = `shot.type ≠ Open Play` **o** tiro con `set_piece_phase` no nulo; el tipo se toma del `play_pattern`. Córner corto = primer pase del córner con longitud < 15 m. | x ≥ 80 (saques); 15 m (corto) | `isac.framework.set_pieces` |
 
 ## 2. Espacio
 
-| ID | Término | Definición |
-|---|---|---|
-| D-10 | Tercios | |
-| D-11 | Carriles | |
-| D-12 | Zona de peligro / área | |
-| D-13 | Altura de presión | |
+| ID | Término | Definición | Implementa |
+|---|---|---|---|
+| D-10 | Tercios | Defensivo x < 40 · medio 40 ≤ x < 80 · último x ≥ 80. Coincide con `location_bucket` de StatsBomb. | `isac.framework.zones` |
+| D-11 | Carriles | Izquierdo y < 26.7 · centro 26.7 ≤ y ≤ 53.3 · derecho y > 53.3 (vistos desde el ataque propio). | `isac.framework.zones` |
+| D-12 | Área y zona 14 | Área: x ≥ 102 y 18 ≤ y ≤ 62. Zona 14: 80 ≤ x < 102 y 26.7 ≤ y ≤ 53.3. **Entrada al área** = pase completado o conducción cuyo punto final cae en el área, iniciado fuera de ella. | `isac.framework.zones` |
+| D-13 | Altura de presión y línea defensiva | Altura de presión = x̄ de los eventos `Pressure` del equipo. Línea defensiva = x̄ de las acciones defensivas (Clearance, Interception, Block, Duel, Pressure, Ball Recovery) realizadas sin posesión. Ambas en metros desde la portería propia. | `isac.framework.zones` |
+| D-14 | Progresión | **Pase progresivo** = pase completado que avanza ≥ 10 m hacia la portería rival y termina en tercio medio o último, **o** cualquier pase completado que entra al último tercio desde fuera de él. **Conducción progresiva** = lo mismo con `carry.end_location`. | `isac.framework.zones` |
 
 ## 3. Contexto (escenarios)
 
-| ID | Término | Definición |
-|---|---|---|
-| D-20 | Localía | |
-| D-21 | Marcador en vivo | ganando / empate / perdiendo, por minuto |
-| D-22 | Momento del partido | 0-30 / 30-60 / 60-90 (+ tiempo añadido) |
-| D-23 | Situación en la tabla | antes del partido: arranque (J1-4) / top 6 asegurado / en top 6 peleando / fuera, alcanzable / pelea play-in / sin nada en juego. Formato: 2021-22 y 2022-23 top 4 + repechaje 5-12; desde Ap 2023 top 6 + play-in 7-10 |
-| D-24 | Fase | regular / reclasificación o play-in / liguilla (cuartos, semis, final; ida vs vuelta; marcador global) |
-| D-25 | Rival | top 6 de ese torneo vs resto; (opcional) estilo del rival |
-| D-26 | Temporada | torneo (Apertura / Clausura) y año |
+| ID | Término | Definición | Implementa |
+|---|---|---|---|
+| D-20 | Localía | Local si el equipo es `home_team`; si no, visita. `neutral_ground` se guarda y se reporta aparte. | `isac.context.match_context` |
+| D-21 | Marcador en vivo | Estado al instante de cada evento: **ganando / empate / perdiendo**. Goles = `Shot` con `outcome = Goal` del equipo + eventos `Own Goal For` del equipo. Los minutos en cada estado se calculan con los tiempos reales de cada periodo (de Half Start a Half End). Toda métrica por estado se normaliza **por 90 minutos en ese estado** y reporta los minutos de exposición. | `isac.context.score_state` |
+| D-22 | Momento del partido | Cubetas por periodo y minuto: 0–15, 15–30, 30–45+ (incluye el añadido del primer tiempo), 45–60, 60–75, 75–90+ (incluye el añadido). Se agrupan en 0–30 / 30–60 / 60–90. Tiempos extra se cuentan en 75–90+. | `isac.context.score_state` |
+| D-23 | Situación en la tabla | Tabla **antes de la jornada** (puntos, diferencia de goles, goles a favor) reconstruida con los partidos de fase regular del torneo con `match_week` menor. Con `rem` = partidos que le faltan al equipo incluido este, N = plazas directas y M = última plaza de repechaje/play-in según la era (2021/22 y 2022/23: N = 4, M = 12, reclasificación; desde Apertura 2023: N = 6, M = 10, play-in): **arranque** (J1–J4) · **directa asegurada** (pts − pts[N+1] > 3·rem) · **en zona directa** (pos ≤ N) · **directa alcanzable** (pts[N] − pts ≤ 3·rem) · **pelea play-in** (pts[M] − pts ≤ 3·rem) · **sin nada en juego**. Las categorías se evalúan en ese orden. | `isac.context.standings`, `isac.context.stakes` |
+| D-24 | Fase | **regular** · **play-in** (reclasificación 2021–2023, play-in desde 2023) · **liguilla** (cuartos, semis, final). Ida/vuelta: dos partidos de la misma ronda entre los mismos equipos ordenados por fecha; **global previo** a la vuelta = resultado de la ida visto desde el equipo (ganando / empatado / perdiendo el global). Partidos únicos (play-in) = `unico`. | `isac.context.tournament`, `isac.context.legs` |
+| D-25 | Rival | **top 6** si el rival terminó entre los 6 primeros de la tabla regular de ese torneo; **resto** si no. Se guarda además el técnico rival. | `isac.context.match_context` |
+| D-26b | Equipo | Club que dirigía en ese partido (Santos Laguna, Pachuca, América). Sirve para ver qué viaja con el técnico y qué depende de la plantilla. | `isac.export.scenarios` |
+| D-26 | Torneo | Apertura si el mes del partido es ≥ 7, Clausura si no, con el año natural (`Apertura 2022`, `Clausura 2023`…). Corrige la etiqueta `Regular Season` que trae el Apertura 2022 en la API. | `isac.context.tournament` |
 
 ## 4. Métricas por bloque
 
-| ID | Bloque | Métricas (existentes) | Métricas propias |
+Todas se calculan por partido-equipo para **toda la liga** (línea base) y por segmento (partido, equipo, estado D-21, cubeta D-22) donde la métrica lo permite. Tasas por 90 minutos.
+
+| ID | Bloque | Métricas (fuente StatsBomb, se citan como suyas) | Métricas propias (definición) |
 |---|---|---|---|
-| M-1 | Ofensiva | xG, OBV, pases progresivos, directness, field tilt | |
-| M-2 | Defensiva y presión | PPDA, presiones en campo rival, contrapresiones, xG en contra | |
-| M-3 | Transiciones | xG en transición a favor / en contra, tiempo en transición | |
-| M-4 | Balón parado | xG por córner / tiro libre / saque de banda, zonas de remate, goles en contra por tipo | |
-| M-5 | Jugadores y cambios | minuto del primer cambio, tipo, cambios de formación (Tactical Shift), impacto antes/después | |
+| M-1 | Ofensiva | xG, np xG, tiros, xG por tiro, tiros fuera del área, OBV ofensivo (pase + conducción + regate), `possession_directness`, regates intentados/completados, salida del portero (`gk_long_pass_ratio`), ritmo hacia portería, `pass_cluster_label` (10 pases más frecuentes vs liga) | % secuencias que llegan al último tercio y % con tiro (D-02); zona de inicio de secuencias (D-10/D-11); pases y conducciones progresivas por 90 (D-14); entradas al área por pase y por conducción (D-12); ratio centros ÷ entradas al área; field tilt = pases propios en último tercio ÷ (propios + rivales en su último tercio); pases bajo presión y su % de éxito |
+| M-2 | Defensiva y presión | `team_match_ppda`, presiones, contrapresiones, xG y tiros concedidos, `deep_completions_conceded`, `passes_inside_box_conceded`, OBV en contra, `aggression` | PPDA propio (D-05b); altura de presión y línea defensiva (D-13); fases de presión por 90, % altas y % exitosas (D-05); contrapresiones y % regain (D-06); tiros concedidos desde dentro del área (D-12); directness permitida al rival |
+| M-3 | Transiciones | `time_in_transition`, `transition_possession_rate`, `counter_attacking_shots` | transiciones ofensivas por 90, xG y tiros en transición, conversión de transición (D-03); recuperaciones altas (x ≥ 80) y % con tiro en 10 s; tiempo medio recuperación → tiro; vulnerabilidad: tiros y xG rivales en 10 s tras pérdida (D-04); xG en contra en transición |
+| M-4 | Balón parado | córners, `corner_xg`, tiros libres, `free_kick_xg`, saques de banda, `throw_in_xg`, goles por tipo, y sus "conceded" | por tipo (D-07): cantidad, xG, tiros, goles, a favor y en contra; córners: envío (inswinging / outswinging / corto), zona de primer contacto (bandas de `end_location` en cuadrícula 6 × 4), zonas de remate; saques en zona de peligro: cantidad, % retención (posesión sigue 3 eventos), tiros en 2 fases; defensivo: xG por córner concedido, **zonas vulnerables** = cuadrícula de origen de los tiros de BP del rival |
+| M-5 | Jugadores y cambios | formación inicial y `Tactical Shift`, `Substitution` (minuto, motivo, posición), minutos por posición (alineaciones v5), OBV por jugador | distribución de formaciones y cambios de formación por estado (D-21) y situación en tabla (D-23); estabilidad del XI = Jaccard entre XIs consecutivos; **núcleo** = jugadores con ≥ 70 % de titularidades en el periodo; minuto del 1.°/2.°/3.° cambio por estado y situación; posición que entra y sale; **impacto** = xG, PPDA propio y directness del equipo en los 15 min antes vs 15 min después del primer cambio |
 
 ## 5. Coherencia
 
-- Una sola función por definición en `src/isac/framework/`; los módulos de `metrics/` solo consumen esas funciones.
-- Cada JSON exportado lleva `definitions: [D-xx, ...]`.
+- Una función por definición en `src/isac/framework/`; los módulos de `src/isac/metrics/` solo consumen esas funciones y las columnas crudas de StatsBomb.
+- `src/isac/metrics/registry.py` declara, para cada métrica, bloque, definiciones usadas, unidad y dirección (más es mejor / peor / neutra). El export lo usa para percentiles y para el diccionario del dashboard.
+- `src/isac/metrics/validate.py` compara las métricas propias con las de StatsBomb a nivel partido (xG, posesión, directness, córners, PPDA) y falla si la correlación cae debajo del umbral.
+- Todo corte reporta `n` (partidos) y, para segmentos, minutos de exposición. Ningún corte con n < 5 partidos o < 90 minutos se muestra como hallazgo.

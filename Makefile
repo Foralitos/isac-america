@@ -17,6 +17,9 @@ metrics:          ## data/processed -> data/processed/metrics/*.parquet
 export:           ## métricas -> data/out/*.json (lo que lee el Next)
 	uv run isac export
 
+publish:          ## sube data/out a MongoDB Atlas (MONGODB_URI en .env)
+	uv run isac publish
+
 all: build metrics export
 
 test:

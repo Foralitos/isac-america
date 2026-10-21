@@ -1,1 +1,2 @@
-"""Un módulo por bloque: offense (M-1), defense (M-2), transitions (M-3), set_pieces (M-4), players (M-5). Cada métrica declara qué definiciones usa."""
+"""Métricas por bloque (M-1..M-5) a nivel partido-equipo (toda la liga) y por segmento de marcador/momento.
+Solo consumen isac.framework y columnas crudas de StatsBomb."""

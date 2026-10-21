@@ -1,1 +1,6 @@
-"""Contexto por partido (D-20..D-26): standings antes de cada jornada, situación en la tabla, fase, localía, rival, marcador en vivo por minuto."""
+"""Contexto por partido-equipo (D-20..D-26): torneo, tabla antes de la jornada, situación, fase,
+ida/vuelta, localía, rival y marcador en vivo."""
+
+from isac.context.match_context import build_match_context
+
+__all__ = ["build_match_context"]

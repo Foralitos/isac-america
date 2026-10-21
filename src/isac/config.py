@@ -20,9 +20,27 @@ SEASONS = {
 
 # Técnico y equipo objetivo (parametrizado para poder perfilar a otro técnico después)
 COACH = "Jorge Guillermo Almada Álves"
-TEAM = "Pachuca"
+TEAM = None  # None = todos los equipos que dirigió en la Liga MX; un nombre acota a ese equipo
+TEAM_ALL_LABEL = "todos"
 
-# Formato del torneo (para D-23 / D-24)
-DIRECT_LIGUILLA = {"<=2022/2023": 4, ">=2023/2024": 6}
-PLAYIN_UNTIL = {"<=2022/2023": 12, ">=2023/2024": 10}
+# Formato del torneo (D-23 / D-24). Clave de orden de torneo: year*2 + (1 si Apertura).
 MATCHDAYS = 17
+TEAMS = 18
+
+
+def tournament_key(year: int, phase: str) -> int:
+    return year * 2 + (1 if phase == "Apertura" else 0)
+
+
+def era_rules(year: int, phase: str) -> dict:
+    """Plazas directas (N), última plaza de repechaje/play-in (M) y nombre del repechaje."""
+    if tournament_key(year, phase) <= tournament_key(2023, "Clausura"):
+        return {"direct": 4, "last": 12, "playoff": "reclasificacion"}
+    return {"direct": 6, "last": 10, "playoff": "play-in"}
+
+
+# Tiempo de partido: segundos de inicio de cada periodo (los timestamps de eventos reinician por periodo)
+PERIOD_BASE = {1: 0, 2: 45 * 60, 3: 90 * 60, 4: 105 * 60, 5: 120 * 60}
+
+# Cancha
+PITCH_X, PITCH_Y = 120.0, 80.0
