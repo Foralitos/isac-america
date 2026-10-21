@@ -1,0 +1,149 @@
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: light --default;
+}
+
+/* Pizarra táctica, modo claro. Tokens únicos del proyecto. */
+:root {
+  --bg: #f5f7f4;
+  --surface: #ffffff;
+  --ink: #0f1f2e;
+  --ink-2: #51606e;
+  --ink-3: #8a96a3;
+  --line: #dfe4e7;
+  --line-2: #eef1f3;
+  --almada: #1e5aa8;
+  --almada-soft: #dbe6f6;
+  --liga: #7d8a96;
+  --contra: #c2410c;
+  --contra-soft: #f8e3d8;
+  --sidebar: #0f1f2e;
+  --sidebar-ink: #d7e0ea;
+  --grass: #2f7d4f;
+  --grass-soft: #e3efe6;
+  --win: #1e5aa8;
+  --draw: #7d8a96;
+  --loss: #c2410c;
+  --before: #7d8a96;
+  --after: #1e5aa8;
+}
+
+@theme {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-almada: var(--almada);
+  --color-almada-soft: var(--almada-soft);
+  --color-liga: var(--liga);
+  --color-contra: var(--contra);
+  --color-contra-soft: var(--contra-soft);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-ink: var(--sidebar-ink);
+  --color-grass: var(--grass);
+  --color-grass-soft: var(--grass-soft);
+  --color-win: var(--win);
+  --color-draw: var(--draw);
+  --color-loss: var(--loss);
+  --color-before: var(--before);
+  --color-after: var(--after);
+  --font-sans: var(--font-archivo), "Archivo", system-ui, sans-serif;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.hero-num,
+.display {
+  font-variant-numeric: proportional-nums;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* Archivo ancho: marcador de estadio para títulos y cifras héroe. Una sola familia, otro eje. */
+.display {
+  font-stretch: 110%;
+  font-variation-settings: "wdth" 110;
+  font-weight: 600;
+}
+
+/* Nombre de campo de StatsBomb dentro de una frase: misma fuente, fondo suave. Nunca monospace. */
+.field {
+  font-size: 0.92em;
+  padding: 0 0.35em;
+  border-radius: 4px;
+  background: var(--line-2);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+/* Superficie "respuesta": sin borde, sobre el fondo, regla izquierda en azul. */
+.answer {
+  border-left: 4px solid var(--almada);
+  padding-left: 1.25rem;
+}
+
+details.explore > summary {
+  cursor: pointer;
+  list-style: none;
+}
+details.explore > summary::-webkit-details-marker {
+  display: none;
+}
+details.explore > summary .chev {
+  transition: transform 160ms ease;
+}
+details.explore[open] > summary .chev {
+  transform: rotate(90deg);
+}
+
+/* Tooltip sencillo por hover/focus para marcas SVG y filas de datos */
+.tip {
+  position: relative;
+}
+.tip > .tip-box {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 6px);
+  z-index: 30;
+  min-width: 14rem;
+  background: var(--ink);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.4;
+  padding: 8px 10px;
+  border-radius: 6px;
+  box-shadow: 0 6px 20px rgb(15 31 46 / 0.18);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-2px);
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+.tip:hover > .tip-box,
+.tip:focus-within > .tip-box {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tip > .tip-box {
+    transition: none;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--almada);
+  outline-offset: 2px;
+}
