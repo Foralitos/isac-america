@@ -25,6 +25,7 @@ def export_matches(rows) -> None:
     cols = [
         "match_id",
         "match_date",
+        "team",
         "tournament",
         "tkey",
         "phase_kind",

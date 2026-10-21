@@ -2,13 +2,13 @@ import Link from "next/link";
 import PageHeader from "@/components/ui/PageHeader";
 import Card from "@/components/ui/Card";
 import Finding from "@/components/ui/Finding";
-import RecordBar from "@/components/ui/RecordBar";
 import ScenarioRail from "@/components/ui/ScenarioRail";
 import { DefChips } from "@/components/ui/DefChip";
 import CategoryBars from "@/components/charts/CategoryBars";
 import ChangeMatrix from "@/components/charts/ChangeMatrix";
-import { getFindings, getScenario } from "@/libs/data";
-import { BLOCKS, SCENARIOS, SMALL_N, catLabel, tournamentKey } from "@/libs/format";
+import { getFindings, getMatches, getScenario } from "@/libs/data";
+import Board from "@/components/board/Board";
+import { BLOCKS, SCENARIOS, catLabel, tournamentKey } from "@/libs/format";
 import { metricLabel, techLabel, unitLabel } from "@/libs/words";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +21,7 @@ export default async function Escenarios({ searchParams }) {
   const sp = await searchParams;
   const escenario = SCENARIOS.some((s) => s.id === sp?.escenario) ? sp.escenario : "localia";
   const bloque = BLOCKS[sp?.bloque] ? sp.bloque : null;
-  const [doc, findings] = await Promise.all([getScenario(escenario), getFindings({ "fields.escenario": escenario })]);
+  const [doc, findings, matches] = await Promise.all([getScenario(escenario), getFindings({ "fields.escenario": escenario }), getMatches()]);
   const meta = SCENARIOS.find((s) => s.id === escenario);
   let cats = (doc?.categories ?? []).filter((c) => c.metrics?.length);
   if (escenario === "torneo") cats = [...cats].sort((a, b) => tournamentKey(a.category) - tournamentKey(b.category));
@@ -40,6 +40,7 @@ export default async function Escenarios({ searchParams }) {
       }
     }
   }
+  const formations = formationsFor(escenario, cats, matches);
   return (
     <>
       <PageHeader question={meta.q} lead="Mismo técnico, distinto contexto. Cada escenario abre con la respuesta y las métricas que más se mueven; el detalle completo está al final." />
@@ -47,33 +48,8 @@ export default async function Escenarios({ searchParams }) {
         <ScenarioRail active={escenario} bloque={bloque} />
         <div className="min-w-0 space-y-10">
           <section>
-            <div className="grid gap-x-8 gap-y-5" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${cats.length > 5 ? 9 : 12}rem, 1fr))` }}>
-              {cats.map((c) => {
-                const small = !segment && (c.n ?? 0) < SMALL_N;
-                return (
-                  <div key={c.category} className={small ? "opacity-70" : ""}>
-                    <p className="text-sm text-ink leading-snug">{catLabel(c)}</p>
-                    <p className="display text-3xl text-ink mt-1">
-                      {segment ? Math.round(c.minutes).toLocaleString("es-MX") : c.n}
-                      <span className="text-sm text-ink-3 font-normal ml-1.5" style={{ fontStretch: "100%", fontVariationSettings: '"wdth" 100' }}>
-                        {segment ? "minutos" : "partidos"}
-                      </span>
-                    </p>
-                    {segment ? (
-                      <div className="h-1.5 w-full max-w-xs bg-line-2 rounded-sm mt-2 overflow-hidden">
-                        <div className="h-full bg-almada" style={{ width: `${((c.minutes ?? 0) / totalMin) * 100}%` }} />
-                      </div>
-                    ) : c.record ? (
-                      <div className="mt-2">
-                        <RecordBar {...c.record} compact />
-                      </div>
-                    ) : null}
-                    {small && <p className="text-[11px] text-ink-3 mt-1">Muestra chica, solo orientativo</p>}
-                  </div>
-                );
-              })}
-            </div>
-            {doc?.note && <p className="text-xs text-ink-3 mt-4">Las cifras de este escenario son {doc.note}.</p>}
+            <Board key={escenario} cats={cats} formations={formations} />
+            {doc?.note && <p className="text-xs text-ink-3 mt-3">Las cifras de este escenario son {doc.note}.</p>}
           </section>
 
           {findings.length > 0 && (
@@ -120,4 +96,32 @@ export default async function Escenarios({ searchParams }) {
       </div>
     </>
   );
+}
+
+// Formación más usada en los partidos de cada categoría del escenario (para colocar las fichas de la pizarra).
+const MATCHERS = {
+  localia: (m, c) => (c === "local") === !!m.is_home,
+  tabla: (m, c) => m.stakes === c,
+  fase: (m, c) => (c === "regular" ? m.phase_kind === "regular" : m.round === c),
+  ida_vuelta: (m, c) => (c === "ida" ? m.leg === "1" : m.leg === "2" && c === `vuelta ${m.agg_before}`),
+  rival: (m, c) => (c === "top6") === !!m.opp_top6,
+  torneo: (m, c) => m.tournament === c,
+  resultado: (m, c) => ({ gano: "W", empato: "D", perdio: "L" })[c] === m.result,
+  equipo: (m, c) => m.team === c,
+};
+
+function formationsFor(escenario, cats, matches) {
+  const match = MATCHERS[escenario];
+  const out = {};
+  if (!match) return out;
+  for (const c of cats) {
+    const count = {};
+    for (const m of matches) {
+      if (!m.formation || !match(m, c.category)) continue;
+      count[m.formation] = (count[m.formation] ?? 0) + 1;
+    }
+    const top = Object.entries(count).sort((a, b) => b[1] - a[1])[0];
+    if (top) out[c.category] = Number(top[0]);
+  }
+  return out;
 }

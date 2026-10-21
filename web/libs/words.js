@@ -147,3 +147,49 @@ export function pctSentence(pct) {
 }
 
 export const PCT_HELP = "Comparado con las 198 temporadas de equipo de la Liga MX desde 2021";
+
+// Valor con su unidad en frase, escrita una sola vez: "16.1 por partido", "4 segundos", "49 % de las veces".
+export function valueWithUnit(value, unit, { pctOf = "de las veces" } = {}) {
+  if (value == null || Number.isNaN(Number(value))) return "sin dato";
+  const v = Number(value);
+  const n = (d) => v.toFixed(d);
+  switch (unit) {
+    case "%":
+      return `${n(0)} % ${pctOf}`.trim();
+    case "/partido":
+      return `${v >= 10 ? n(1) : n(2)} por partido`;
+    case "/90 min":
+      return `${v >= 10 ? n(1) : n(2)} por cada 90 minutos`;
+    case "xG/partido":
+      return `${n(2)} goles esperados por partido`;
+    case "xG":
+      return `${n(3)} goles esperados`;
+    case "OBV/partido":
+      return `${n(2)} goles de valor por partido`;
+    case "pases/acción":
+      return `${n(1)} pases que deja dar`;
+    case "0–1":
+      return `${n(2)} de 0 a 1`;
+    case "ratio":
+      return `${n(2)} por cada una`;
+    case "m":
+      return `${n(0)} metros`;
+    case "min":
+      return `minuto ${n(0)}`;
+    case "s":
+      return `${n(0)} segundos`;
+    default:
+      return `${v >= 100 ? n(0) : v >= 10 ? n(1) : n(2)}${unit ? ` ${unit}` : ""}`;
+  }
+}
+
+// Solo el número, con el formato de arriba, para la referencia de liga.
+export function valueOnly(value, unit) {
+  if (value == null || Number.isNaN(Number(value))) return "sin dato";
+  const v = Number(value);
+  if (unit === "%") return `${v.toFixed(0)} %`;
+  if (unit === "xG") return v.toFixed(3);
+  if (unit === "m" || unit === "min" || unit === "s") return v.toFixed(0);
+  if (unit === "pases/acción") return v.toFixed(1);
+  return v >= 100 ? v.toFixed(0) : v >= 10 ? v.toFixed(1) : v.toFixed(2);
+}

@@ -53,3 +53,12 @@ export function shortName(full) {
   if (t.length === 2) return t[1];
   return t[2];
 }
+
+// Filas de una formación (de atrás hacia adelante) con su reparto lateral en unidades de cancha (y de 0 a 80).
+export function rowsOf(f) {
+  const rows = String(f ?? "4231").replace(/\.0$/, "").split("").map(Number).filter((n) => n > 0);
+  return rows.map((k) => {
+    const m = k >= 4 ? 0.1 : k === 3 ? 0.2 : 0.35;
+    return Array.from({ length: k }, (_, i) => (k === 1 ? 0.5 : m + ((1 - 2 * m) * i) / (k - 1)) * 80);
+  });
+}

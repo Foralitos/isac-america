@@ -138,7 +138,7 @@ export default function MatchList({ matches, league }) {
                       {m.gf}-{m.ga}
                     </span>
                   </span>
-                  <span className="text-xs text-ink-2 truncate">
+                  <span className="text-xs text-ink-2 leading-tight">
                     {m.pos_before != null && m.phase_kind === "regular" && <span className="text-ink num">{m.pos_before}.º </span>}
                     {STAKES_LABEL[m.stakes] ?? m.stakes}
                   </span>

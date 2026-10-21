@@ -16,7 +16,7 @@ export default function DefChip({ id }) {
   return (
     <Link href={`/dashboard/metodologia#${id}`} className={cls} title={label}>
       <span className="font-medium mr-1">{id}</span>
-      <span className="text-ink-3 max-w-[11rem] truncate">{label}</span>
+      <span className="text-ink-3">{label}</span>
     </Link>
   );
 }

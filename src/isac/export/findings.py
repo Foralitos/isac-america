@@ -31,7 +31,8 @@ def parse_findings() -> list[dict]:
             m = re.match(r"^- (\w+): (.*)$", ln.strip())
             if m:
                 f["fields"][m.group(1)] = m.group(2).strip().strip('"')
-            elif ln.strip():
+            elif ln.strip() and not ln.lstrip().startswith("#"):
+                # Los encabezados de sección (## ...) separan hallazgos, no son texto.
                 free.append(ln.strip())
         f["text"] = " ".join(free)
         if "definiciones" in f["fields"]:
