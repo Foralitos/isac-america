@@ -7,7 +7,12 @@ import pandas as pd
 from isac.config import PROCESSED
 from isac.io.events import EVENTS_OUT
 from isac.metrics.match import team_match_metrics
-from isac.metrics.players import formation_changes, substitutions
+from isac.metrics.players import (
+    formation_changes,
+    formation_minutes,
+    position_profiles,
+    substitutions,
+)
 from isac.metrics.segments import team_segment_metrics
 from isac.metrics.validate import validate
 
@@ -30,6 +35,9 @@ def _process_match(ev: pd.DataFrame) -> dict:
         "throwins": [],
         "subs": [],
         "formations": [],
+        "formation_minutes": [],
+        "positions": [],
+        "pass_pairs": [],
     }
     for tid in teams:
         opp = teams[1] if tid == teams[0] else teams[0]
@@ -42,6 +50,10 @@ def _process_match(ev: pd.DataFrame) -> dict:
         out["throwins"].extend(aux["throwins"])
         out["subs"].extend(substitutions(ev, tid, opp))
         out["formations"].extend(formation_changes(ev, tid))
+        out["formation_minutes"].extend(formation_minutes(ev, tid))
+        pp = position_profiles(ev, tid)
+        out["positions"].extend(pp["positions"])
+        out["pass_pairs"].extend(pp["pass_pairs"])
     return out
 
 
@@ -56,6 +68,9 @@ def run_metrics(log=print, workers: int = 8, season_ids: list[int] | None = None
         "throwins": [],
         "subs": [],
         "formations": [],
+        "formation_minutes": [],
+        "positions": [],
+        "pass_pairs": [],
     }
     for d in sorted(EVENTS_OUT.glob("season_id=*")):
         sid = int(d.name.split("=")[1])
@@ -79,6 +94,11 @@ def run_metrics(log=print, workers: int = 8, season_ids: list[int] | None = None
     pd.DataFrame(acc["throwins"]).to_parquet(METRICS_DIR / "sp_throwins.parquet", index=False)
     pd.DataFrame(acc["subs"]).to_parquet(METRICS_DIR / "subs.parquet", index=False)
     pd.DataFrame(acc["formations"]).to_parquet(METRICS_DIR / "formations_ev.parquet", index=False)
+    pd.DataFrame(acc["positions"]).to_parquet(METRICS_DIR / "positions.parquet", index=False)
+    pd.DataFrame(acc["pass_pairs"]).to_parquet(METRICS_DIR / "pass_pairs.parquet", index=False)
+    pd.DataFrame(acc["formation_minutes"]).to_parquet(
+        METRICS_DIR / "formation_minutes.parquet", index=False
+    )
     log(f"metrics_match: {len(mm)} filas, {mm.shape[1]} columnas")
     tms = pd.read_parquet(PROCESSED / "team_match_stats.parquet")
     rep = validate(mm, tms)

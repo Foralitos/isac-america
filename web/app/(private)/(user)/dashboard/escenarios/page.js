@@ -26,7 +26,6 @@ export default async function Escenarios({ searchParams }) {
   let cats = (doc?.categories ?? []).filter((c) => c.metrics?.length);
   if (escenario === "torneo") cats = [...cats].sort((a, b) => tournamentKey(a.category) - tournamentKey(b.category));
   const segment = cats.some((c) => c.minutes);
-  const totalMin = segment ? cats.reduce((a, c) => a + (c.minutes ?? 0), 0) : 0;
   const nMetrics = new Set(cats.flatMap((c) => c.metrics.map((m) => m.metric))).size;
   const blocksHere = Object.keys(BLOCKS).filter((b) => cats.some((c) => c.metrics.some((m) => m.block === b)));
   const activeBlock = bloque ?? blocksHere[0];

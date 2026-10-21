@@ -182,7 +182,7 @@ export default function SetPieceBoard({ board, penalties }) {
   const key = `${play}-${dir}-${team}-${side}-${deliv}-${origin}-${shotType}`;
 
   // ---- córners
-  const cData = src[`corners_${dir}`] ?? { bundles: [], heat: [], n: 0 };
+  const cData = useMemo(() => src[`corners_${dir}`] ?? { bundles: [], heat: [], n: 0 }, [src, dir]);
   const cBundles = useMemo(() => (cData.bundles ?? []).filter((b) => b.side === side && (!deliv || b.delivery === deliv)), [cData, side, deliv]);
   const cZones = useMemo(() => groupZones(cBundles, (b) => b.zone), [cBundles]);
   const cSideTotal = (cData.bundles ?? []).filter((b) => b.side === side).reduce((a, b) => a + b.n, 0);
@@ -190,7 +190,7 @@ export default function SetPieceBoard({ board, penalties }) {
   const cTop = cZones.length ? [...cZones].sort((a, b) => b.n - a.n)[0] : null;
 
   // ---- tiros libres
-  const fData = src[`free_kicks_${dir}`] ?? { bundles: [], direct: [], n: 0 };
+  const fData = useMemo(() => src[`free_kicks_${dir}`] ?? { bundles: [], direct: [], n: 0 }, [src, dir]);
   const origins = useMemo(() => {
     const acc = {};
     for (const b of fData.bundles ?? []) acc[b.origin_zone] = (acc[b.origin_zone] ?? 0) + b.n;
@@ -209,14 +209,14 @@ export default function SetPieceBoard({ board, penalties }) {
   const fOriginPt = fAll.length ? { x: fAll.reduce((a, z) => a + z.ox * z.n, 0) / fTot.n, y: fAll.reduce((a, z) => a + z.oy * z.n, 0) / fTot.n } : null;
 
   // ---- saques de banda
-  const tData = src[`throwins_${dir}`] ?? { bundles: [], n: 0 };
+  const tData = useMemo(() => src[`throwins_${dir}`] ?? { bundles: [], n: 0 }, [src, dir]);
   const tZones = useMemo(() => groupZones((tData.bundles ?? []).filter((b) => b.side === side), (b) => b.zone), [tData, side]);
   const tTot = tZones.reduce((a, z) => ({ n: a.n + z.n, goals: a.goals + z.goals, ret: a.ret + z.ret * z.n }), { n: 0, goals: 0, ret: 0 });
   const tOriginPt = tZones.length ? { x: tZones.reduce((a, z) => a + z.ox * z.n, 0) / tTot.n, y: side === "izquierda" ? 0 : 80 } : null;
 
   // ---- tiros
-  const sData = src[`shots_${dir}`] ?? { heat: [], by_type: {}, n: 0 };
-  const sCells = shotType ? (sData.by_type?.[shotType] ?? []) : (sData.heat ?? []);
+  const sData = useMemo(() => src[`shots_${dir}`] ?? { heat: [], by_type: {}, n: 0 }, [src, dir]);
+  const sCells = useMemo(() => (shotType ? (sData.by_type?.[shotType] ?? []) : (sData.heat ?? [])), [sData, shotType]);
   const sZones = useMemo(() => shotZones(sCells), [sCells]);
   const sTotal = sZones.reduce((a, z) => a + z.n, 0) || 1;
   const sMax = Math.max(...sZones.map((z) => z.n), 1);

@@ -1,4 +1,4 @@
-import { fmt } from "@/libs/format";
+
 import { level, metricLabel, pctSentence, techLabel, valueOnly, valueWithUnit } from "@/libs/words";
 
 // Una barra por métrica que sale del centro: a la derecha si hace más que la liga, a la izquierda si hace menos.

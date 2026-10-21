@@ -63,7 +63,16 @@ def run_export(log=print, coach: str = COACH, team: str | None = TEAM) -> None:
         select_pairs(d["free_kicks"], rows),
         select_pairs(d["throwins"], rows),
     )
-    export_players(rows, d["formations"], d["subs"], d["lineups"], None)
+    export_players(
+        rows,
+        d["formations"],
+        d["subs"],
+        d["lineups"],
+        None,
+        d["formation_minutes"],
+        d["positions"],
+        d["pass_pairs"],
+    )
     export_matches(rows)
     export_findings()
     # perfil por equipo (capítulos): Santos, Pachuca, América...
