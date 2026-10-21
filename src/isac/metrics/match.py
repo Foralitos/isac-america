@@ -182,7 +182,10 @@ def team_match_metrics(
     ti = danger_throw_ins(ev, team_id)
     m["throwins_danger"] = len(ti)
     m["throwin_retention_pct"] = _pct(ti["retained"].sum(), len(ti)) if len(ti) else np.nan
-    m["free_kicks_zone"] = len(free_kicks(ev, team_id))
+    fk = free_kicks(ev, team_id)
+    fkc = free_kicks(ev, opp_id)
+    tic = danger_throw_ins(ev, opp_id)
+    m["free_kicks_zone"] = len(fk)
     m["sp_shots_conceded"] = len(spc)
     m["sp_xg_conceded"] = float(spc["shot_xg"].sum())
     m["sp_goals_conceded"] = int((spc["shot_outcome"] == "Goal").sum())
@@ -205,29 +208,99 @@ def team_match_metrics(
     m["first_sub_minute"] = int(subs["minute"].min()) if len(subs) else None
 
     # ---- tablas auxiliares de BP (agregables a cuadrícula; sin coordenadas crudas en el export)
-    aux = {
-        "corners": [
+    def _corner_rows(df, is_for):
+        if not len(df):
+            return []
+        return [
             {
                 "match_id": m["match_id"],
                 "team_id": team_id,
+                "for": is_for,
                 "delivery": d,
                 "side": sd,
+                "height": h,
+                "zone": z,
                 "cell": cell,
+                "cell4": c4,
                 "xg": x,
                 "shots": s,
                 "goals": g,
             }
-            for d, sd, cell, x, s, g in zip(
-                c["delivery"],
-                c["side"],
-                grid_cell(c["end_x"].fillna(0), c["end_y"].fillna(0)),
-                c["xg"],
-                c["shots"],
-                c["goals"],
+            for d, sd, h, z, cell, c4, x, s, g in zip(
+                df["delivery"],
+                df["side"],
+                df["height"],
+                df["zone"],
+                grid_cell(df["end_x"].fillna(0), df["end_y"].fillna(0)),
+                grid_cell(df["end_x"].fillna(0), df["end_y"].fillna(0), 30, 20),
+                df["xg"],
+                df["shots"],
+                df["goals"],
             )
         ]
-        if len(c)
-        else [],
+
+    def _fk_rows(df, is_for):
+        if not len(df):
+            return []
+        return [
+            {
+                "match_id": m["match_id"],
+                "team_id": team_id,
+                "for": is_for,
+                "direct": bool(dr),
+                "origin_zone": oz,
+                "zone": z,
+                "cell4": c4,
+                "end4": e4,
+                "xg": float(x),
+                "shots": int(sh),
+                "goals": int(g),
+            }
+            for dr, oz, z, c4, e4, x, sh, g in zip(
+                df["direct"],
+                df["origin_zone"],
+                df["zone"],
+                grid_cell(df["x"], df["y"], 30, 20),
+                grid_cell(df["end_x"].fillna(df["x"]), df["end_y"].fillna(df["y"]), 30, 20),
+                df["xg"],
+                df["shots"],
+                df["goals"],
+            )
+        ]
+
+    def _ti_rows(df, is_for):
+        if not len(df):
+            return []
+        return [
+            {
+                "match_id": m["match_id"],
+                "team_id": team_id,
+                "for": is_for,
+                "side": sd,
+                "zone": z,
+                "retained": bool(r),
+                "cell4": c4,
+                "end4": e4,
+                "xg": float(x),
+                "shots": int(sh),
+                "goals": int(g),
+            }
+            for sd, z, r, c4, e4, x, sh, g in zip(
+                df["side"],
+                df["zone"],
+                df["retained"],
+                grid_cell(df["x"], df["y"], 30, 20),
+                grid_cell(df["end_x"].fillna(df["x"]), df["end_y"].fillna(df["y"]), 30, 20),
+                df["xg"],
+                df["shots"],
+                df["goals"],
+            )
+        ]
+
+    aux = {
+        "corners": _corner_rows(c, True) + _corner_rows(cc, False),
+        "free_kicks": _fk_rows(fk, True) + _fk_rows(fkc, False),
+        "throwins": _ti_rows(ti, True) + _ti_rows(tic, False),
         "sp_shots": [
             {
                 "match_id": m["match_id"],
@@ -235,11 +308,16 @@ def team_match_metrics(
                 "for": True,
                 "sp_type": st,
                 "cell": cell,
+                "cell4": c4,
                 "xg": x,
                 "goal": oc == "Goal",
             }
-            for st, cell, x, oc in zip(
-                sp["sp_type"], grid_cell(sp["x"], sp["y"]), sp["shot_xg"], sp["shot_outcome"]
+            for st, cell, c4, x, oc in zip(
+                sp["sp_type"],
+                grid_cell(sp["x"], sp["y"]),
+                grid_cell(sp["x"], sp["y"], 30, 20),
+                sp["shot_xg"],
+                sp["shot_outcome"],
             )
         ]
         + [
@@ -249,11 +327,16 @@ def team_match_metrics(
                 "for": False,
                 "sp_type": st,
                 "cell": cell,
+                "cell4": c4,
                 "xg": x,
                 "goal": oc == "Goal",
             }
-            for st, cell, x, oc in zip(
-                spc["sp_type"], grid_cell(spc["x"], spc["y"]), spc["shot_xg"], spc["shot_outcome"]
+            for st, cell, c4, x, oc in zip(
+                spc["sp_type"],
+                grid_cell(spc["x"], spc["y"]),
+                grid_cell(spc["x"], spc["y"], 30, 20),
+                spc["shot_xg"],
+                spc["shot_outcome"],
             )
         ],
     }

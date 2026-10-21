@@ -3,7 +3,7 @@ import Card from "@/components/ui/Card";
 import Finding from "@/components/ui/Finding";
 import Stat from "@/components/ui/Stat";
 import PairedBars from "@/components/charts/PairedBars";
-import PitchGrid from "@/components/charts/PitchGrid";
+import SetPieceBoard from "@/components/board/SetPieceBoard";
 import { getFindings, getSetPieces } from "@/libs/data";
 
 export const dynamic = "force-dynamic";
@@ -42,24 +42,25 @@ export default async function BalonParado() {
         </div>
       )}
 
+      {sp.board && (
+        <div className="mb-6">
+          <SetPieceBoard
+            board={sp.board}
+            penalties={{
+              for: { n: sp.shots_for.by_type.find((t) => t.sp_type === "penal")?.shots ?? 0, goals: sp.shots_for.by_type.find((t) => t.sp_type === "penal")?.goals ?? 0 },
+              against: { n: sp.shots_against.by_type.find((t) => t.sp_type === "penal")?.shots ?? 0, goals: sp.shots_against.by_type.find((t) => t.sp_type === "penal")?.goals ?? 0 },
+              league: { n: sp.league_shots_for_by_type?.find((t) => t.sp_type === "penal")?.shots ?? 0, goals: sp.league_shots_for_by_type?.find((t) => t.sp_type === "penal")?.goals ?? 0 },
+            }}
+          />
+        </div>
+      )}
+
       <div className="grid md:grid-cols-2 gap-6 mb-6">
         <Card title="Tipo de envío" sub="Porcentaje de córners por tipo de cobro.">
           <PairedBars data={mix} unit="%" />
         </Card>
         <Card title="Peligro por cada córner según el envío" sub="Goles esperados por cobro, con la liga como referencia. Cerrado: el balón va hacia la portería; abierto: se aleja de ella.">
           <PairedBars data={xgBy} unit="xg" />
-        </Card>
-      </div>
-
-      <div className="grid md:grid-cols-3 gap-6 mb-6">
-        <Card title="Primer contacto de sus córners" sub="Celdas de 10 metros. Más oscuro, más balones.">
-          <PitchGrid cells={c.first_contact_grid} value="n" title="Mitad rival, ataque hacia la derecha" />
-        </Card>
-        <Card title="De dónde tira a balón parado" sub="Peligro acumulado por celda, a favor.">
-          <PitchGrid cells={sp.shots_for.grid} value="xg" title="Mitad rival, ataque hacia la derecha" />
-        </Card>
-        <Card title="Zonas vulnerables" sub="Peligro acumulado por celda de los tiros rivales a balón parado.">
-          <PitchGrid cells={sp.shots_against.grid} value="xg" title="Vista en espejo: el rival ataca hacia la derecha" />
         </Card>
       </div>
 

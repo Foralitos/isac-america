@@ -59,6 +59,9 @@ def run_export(log=print, coach: str = COACH, team: str | None = TEAM) -> None:
         d["sp_shots"],
         len(rows),
         len(baseline),
+        rows,
+        select_pairs(d["free_kicks"], rows),
+        select_pairs(d["throwins"], rows),
     )
     export_players(rows, d["formations"], d["subs"], d["lineups"], None)
     export_matches(rows)

@@ -19,6 +19,8 @@ def load_all() -> dict[str, pd.DataFrame]:
         "seg": pd.read_parquet(METRICS_DIR / "metrics_segment.parquet"),
         "corners": pd.read_parquet(METRICS_DIR / "sp_corners.parquet"),
         "sp_shots": pd.read_parquet(METRICS_DIR / "sp_shots.parquet"),
+        "free_kicks": pd.read_parquet(METRICS_DIR / "sp_free_kicks.parquet"),
+        "throwins": pd.read_parquet(METRICS_DIR / "sp_throwins.parquet"),
         "subs": pd.read_parquet(METRICS_DIR / "subs.parquet"),
         "formations": pd.read_parquet(METRICS_DIR / "formations_ev.parquet"),
         "lineups": pd.read_parquet(PROCESSED / "lineups.parquet"),
