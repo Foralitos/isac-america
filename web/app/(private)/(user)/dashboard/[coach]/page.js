@@ -27,7 +27,7 @@ export default async function Identidad({ params }) {
     <>
       <PageHeader
         question={`Así trabaja ${short}`}
-        lead={`${profile.n_matches} partidos de Liga MX con ${(profile.teams ?? []).map((t) => `${t.team} (${t.n})`).join(", ")}, de ${dateLabel(profile.period?.from)} a ${dateLabel(profile.period?.to)}. Cada dato se compara con lo que hacen los demás equipos de la liga desde 2021 (${meta?.league_units ?? 198} temporadas de equipo).`}
+        lead={`${profile.n_matches} partidos de Liga MX con ${(profile.teams ?? []).map((t) => `${t.team} (${t.n})`).join(", ")}, de ${dateLabel(profile.period?.from)} a ${dateLabel(profile.period?.to)}. Cada dato se compara con lo que hacen los demás equipos de la liga desde 2021 (${meta?.league_units ?? 198} temporadas de equipo).${profile.n_matches < 30 ? ` Este técnico tiene solo ${profile.n_matches} partidos en la Liga MX con datos y el análisis se hizo con esos: las cifras son orientativas y los cortes por contexto pueden moverse con pocas jornadas más.` : ""}`}
         aside={
           <div className="flex gap-6">
             {[

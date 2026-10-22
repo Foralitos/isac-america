@@ -34,6 +34,7 @@ export default async function ElegirTecnico() {
                 </p>
                 {c.record && <RecordBar {...c.record} compact />}
               </div>
+              {c.n_matches < 30 && <p className="text-[11px] text-ink-3 mt-3">Solo {c.n_matches} partidos en la Liga MX con datos; el análisis se hizo con esos.</p>}
               {c.n_findings === 0 && <p className="text-[11px] text-ink-3 mt-3">Sin hallazgos redactados todavía: solo cifras.</p>}
             </Link>
           ))}

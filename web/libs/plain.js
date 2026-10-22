@@ -22,7 +22,7 @@ export const DEFS = {
   "D-24": { term: "Fase del torneo", corto: "Fase regular, play-in o liguilla. En la liguilla, si es ida o vuelta y cómo iba el global.", diagram: null },
   "D-25": { term: "Tipo de rival", corto: "Si el rival terminó ese torneo entre los seis primeros de la tabla.", diagram: null },
   "D-26": { term: "Torneo", corto: "Apertura si el partido fue de julio en adelante, Clausura si no.", diagram: null },
-  "D-26b": { term: "Equipo", corto: "Con qué equipo dirigía Almada ese partido: Santos Laguna, Pachuca o América.", diagram: null },
+  "D-26b": { term: "Equipo", corto: "Con qué equipo dirigía el técnico ese partido. Cuando dirigió a más de uno, cada equipo es un escenario.", diagram: null },
   SB: { term: "Métrica de StatsBomb", corto: "Se usa tal como la publica Hudl StatsBomb.", diagram: null },
 };
 

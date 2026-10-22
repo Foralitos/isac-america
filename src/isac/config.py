@@ -19,7 +19,7 @@ SEASONS = {
 }
 
 # Técnicos. La clave de cada técnico es slug(nombre completo de StatsBomb); el equipo es un escenario, no parte de la clave.
-MIN_MATCHES = 30  # partidos mínimos para que un técnico aparezca en `isac coaches` / `--all`
+MIN_MATCHES = 10  # partidos mínimos para que un técnico aparezca en `isac coaches` / `--all`
 COACH_SHORT = {
     "Jorge Guillermo Almada Álves": "Almada",
     "Antonio Ricardo Mohamed Matijevich": "Turco Mohamed",
