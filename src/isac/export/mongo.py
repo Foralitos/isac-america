@@ -6,7 +6,7 @@ colecciones y tamaño antes de subir y aborta si un técnico pasa de MAX_MB_COAC
 
 Esquema (base multi-técnico):
 - `coaches`: registro, un doc por técnico publicado (_id = coach_key). El picker del dashboard lee solo esto.
-- `meta`, `profile`, `scenarios`, `set_pieces`, `players`, `matches`, `findings`: por técnico, `key` = coach_key,
+- `meta`, `profile`, `scenarios`, `set_pieces`, `players`, `rivals`, `matches`, `findings`: por técnico, `key` = coach_key,
   `_id` = `coach_key:nombre`. Los capítulos por equipo van en `profile` con `_id` = `coach_key:team_key:profile`.
 - `definitions` y `league`: globales, `key` = "global".
 """
@@ -22,7 +22,7 @@ from pymongo import MongoClient, UpdateOne
 from isac.config import OUT, ROOT
 from isac.export.common import GLOBAL_DIR, coach_dir
 
-SINGLETONS = ["meta", "profile", "set_pieces", "players"]
+SINGLETONS = ["meta", "profile", "set_pieces", "players", "rivals"]
 MAX_MB_COACH = 3.0
 GLOBAL_KEY = "global"
 
@@ -80,6 +80,8 @@ def publish(coach_key: str, log=print) -> None:
     base = {"coach": meta["coach"], "short": meta["short"], "key": key}
 
     for name in SINGLETONS:
+        if not (folder / f"{name}.json").exists():
+            continue
         doc = {**base, "_id": f"{key}:{name}", **_load(folder, name)}
         db[name].replace_one({"_id": doc["_id"]}, doc, upsert=True)
         log(f"  {name}: 1 doc")
@@ -156,6 +158,7 @@ def clean_legacy(log=print) -> None:
         "scenarios",
         "set_pieces",
         "players",
+        "rivals",
         "matches",
         "findings",
         "definitions",

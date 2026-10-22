@@ -62,3 +62,7 @@ export async function getMatches(key) {
   const docs = await (await db()).collection("matches").find({ key }).sort({ match_date: 1 }).toArray();
   return docs.map(strip);
 }
+
+export async function getRivals(key) {
+  return strip(await (await db()).collection("rivals").findOne({ _id: `${key}:rivals` }));
+}

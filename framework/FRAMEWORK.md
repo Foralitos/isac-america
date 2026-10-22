@@ -46,6 +46,7 @@
 | D-25 | Rival | **top 6** si el rival terminó entre los 6 primeros de la tabla regular de ese torneo; **resto** si no. Se guarda además el técnico rival. | `isac.context.match_context` |
 | D-26b | Equipo | Club que dirigía en ese partido (Santos Laguna, Pachuca, América). Sirve para ver qué viaja con el técnico y qué depende de la plantilla. | `isac.export.scenarios` |
 | D-26 | Torneo | Apertura si el mes del partido es ≥ 7, Clausura si no, con el año natural (`Apertura 2022`, `Clausura 2023`…). Corrige la etiqueta `Regular Season` que trae el Apertura 2022 en la API. | `isac.context.tournament` |
+| D-27 | Estilo del rival | Percentil de liga (sobre la media equipo-torneo, D-23 de la línea base) del **equipo rival en ese torneo** en seis ejes: tiene el balón (field tilt), presiona arriba (altura de presión), juega directo (directness), pega a la contra (xG en transición), peligro a balón parado (xG de balón parado) y concede poco (xG concedido, invertido). Cada eje se parte en tercios (bajo < 33, medio, alto ≥ 67). Para un técnico que dirige hoy (su equipo jugó con él en los últimos 60 días de la base) el estilo sale de sus últimos 34 partidos. **Rivales parecidos**: los 20 partidos del técnico cuyo rival tenía el estilo más cercano (distancia euclidiana en los seis percentiles). **Palancas**: diferencia entre partidos ganados y perdidos contra un mismo tercio, medida solo en los minutos con el partido empatado (D-21) y solo si hay al menos 5 partidos de cada lado. | `isac.export.rivals` |
 
 ## 4. Métricas por bloque
 

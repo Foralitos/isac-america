@@ -18,6 +18,7 @@ from isac.export.findings import export_findings
 from isac.export.matches import export_matches
 from isac.export.players import export_players
 from isac.export.profile import export_profile
+from isac.export.rivals import export_rivals
 from isac.export.scenarios import (
     export_match_scenarios,
     export_segment_scenarios,
@@ -151,6 +152,7 @@ def run_export(coach_query: str, log=print, d: dict | None = None) -> str:
         d["pass_pairs"],
     )
     export_matches(rows)
+    export_rivals(rows, mm, baseline, d["seg"])
     export_findings(key)
     chapters = []
     for other_team, g in rows.groupby("team"):
