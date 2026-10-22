@@ -41,6 +41,12 @@ export default function UserSidebar({ coach }) {
           </ul>
         </nav>
         <div className="px-6 py-4 border-t border-white/10 text-xs text-sidebar-ink/60 space-y-2">
+          <Link
+            href={`/dashboard/${coach.key}/metodologia`}
+            className={`block underline underline-offset-2 ${pathname.startsWith(`/dashboard/${coach.key}/metodologia`) ? "text-white" : "text-sidebar-ink/80 hover:text-white"}`}
+          >
+            Cómo se midió
+          </Link>
           <p>Datos Hudl StatsBomb, uso exclusivo para ISAC 2026.</p>
           <button onClick={() => signOut({ callbackUrl: "/" })} className="text-sidebar-ink/80 hover:text-white">
             Cerrar sesión

@@ -1,8 +1,12 @@
+"use client";
+
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { DEFS } from "@/libs/plain";
 
-// Un ID de definición (D-20) como chip con su nombre al pasar el mouse y link al glosario.
+// Un ID de definición (D-20) como chip con su nombre al pasar el mouse y link al glosario del técnico en pantalla.
 export default function DefChip({ id }) {
+  const { coach } = useParams();
   const d = DEFS[id];
   const label = d?.term ?? id;
   const cls = "inline-flex items-center rounded-md border border-line bg-surface px-1.5 py-0.5 text-[11px] text-ink-2 hover:border-ink-3 hover:text-ink";
@@ -14,7 +18,7 @@ export default function DefChip({ id }) {
     );
   }
   return (
-    <Link href={`/dashboard/metodologia#${id}`} className={cls} title={label}>
+    <Link href={`/dashboard/${coach}/metodologia#${id}`} className={cls} title={label}>
       <span className="font-medium mr-1">{id}</span>
       <span className="text-ink-3">{label}</span>
     </Link>

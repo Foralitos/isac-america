@@ -1,7 +1,5 @@
 import PageHeader from "@/components/ui/PageHeader";
-import Card from "@/components/ui/Card";
-import TrendLine from "@/components/charts/TrendLine";
-import MatchList from "./MatchList";
+import PartidosView from "./PartidosView";
 import { getMatches, getProfile } from "@/libs/data";
 import { STAKES_LABEL } from "@/libs/format";
 
@@ -14,44 +12,40 @@ function rolling(values, w = 5) {
   });
 }
 
-const SHORT = (t) => t.replace("Apertura", "Ap.").replace("Clausura", "Cl.");
+const SHORT = (t) => t.replace("Apertura ", "Ap. ").replace("Clausura ", "Cl. ").replace(/20(\d\d)$/, "$1");
 
-export default async function Partidos() {
-  const [matches, profile] = await Promise.all([getMatches(), getProfile()]);
+export default async function Partidos({ params }) {
+  const { coach: key } = await params;
+  const [matches, profile] = await Promise.all([getMatches(key), getProfile(key)]);
   const league = Object.fromEntries(Object.values(profile?.blocks ?? {}).flat().map((m) => [m.metric, m.league_mean]));
-  const xgd = rolling(matches.map((m) => m.xgd));
+  const xgdAvg = rolling(matches.map((m) => m.xgd));
+  const ppdaAvg = rolling(matches.map((m) => m.ppda_own));
   const bands = [];
-  const marks = [];
+  const teams = [];
   matches.forEach((m, i) => {
     const last = bands[bands.length - 1];
     if (!last || last.label !== m.tournament) {
       if (last) last.to = i - 1;
-      bands.push({ label: m.tournament, short: SHORT(m.tournament), from: i, to: i });
+      bands.push({ label: m.tournament, short: SHORT(m.tournament), team: m.team, from: i, to: i, W: 0, D: 0, L: 0 });
     }
-    if (i === 0 || matches[i - 1].team !== m.team) marks.push({ x: i, label: m.team });
+    const b = bands[bands.length - 1];
+    if (m.result in b) b[m.result] += 1;
+    if (i === 0 || matches[i - 1].team !== m.team) teams.push({ from: i, label: m.team });
   });
   if (bands.length) bands[bands.length - 1].to = matches.length - 1;
   const series = matches.map((m, i) => ({
     x: i,
     title: `${m.team} ${m.is_home ? "en casa" : "de visita"} contra ${m.opponent}, ${m.gf}-${m.ga}`,
     sub: `${m.tournament}. ${STAKES_LABEL[m.stakes] ?? m.stakes}`,
-    xgd: xgd[i],
+    xgd: m.xgd,
+    xgdAvg: xgdAvg[i],
     ppda: m.ppda_own,
+    ppdaAvg: ppdaAvg[i],
   }));
   return (
     <>
-      <PageHeader question="¿Cómo se fue moviendo el equipo partido a partido?" lead="Cada punto es un partido, en orden. Las bandas separan los torneos y la línea punteada marca cuándo cambió de equipo." />
-      <div className="grid md:grid-cols-2 gap-6 mb-8">
-        <Card title="Balance de peligro, promedio de los últimos 5 partidos" sub="Peligro creado menos peligro concedido, en goles esperados. Arriba de cero crea más de lo que concede.">
-          <TrendLine data={series} dataKey="xgd" league={0} bands={bands} marks={marks} />
-        </Card>
-        <Card title="Intensidad de presión por partido" sub="Pases que deja dar al rival antes de robar el balón. Menos pases es presión más intensa.">
-          <TrendLine data={series} dataKey="ppda" league={league.ppda_own} bands={bands} marks={marks} />
-        </Card>
-      </div>
-      <Card title={`Los ${matches.length} partidos`} sub="Agrupados por torneo. La situación en la tabla es la de antes de jugar, con la posición que ocupaba.">
-        <MatchList matches={matches} league={league} />
-      </Card>
+      <PageHeader question="¿Cómo se fue moviendo el equipo partido a partido?" lead="Cada punto es un partido, en orden. Elige un torneo en la franja de abajo de la gráfica para ver sus partidos." />
+      <PartidosView matches={matches} league={league} series={series} bands={bands} teams={teams} />
     </>
   );
 }
