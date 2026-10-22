@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 import numpy as np
 import pandas as pd
 
-from isac.config import COACH, OUT, PROCESSED, TEAM
+from isac.config import OUT, PROCESSED
 from isac.metrics.registry import METRICS
 from isac.metrics.run import METRICS_DIR
 
@@ -33,7 +33,24 @@ def load_all() -> dict[str, pd.DataFrame]:
     return d
 
 
-def coach_mask(df: pd.DataFrame, coach: str = COACH, team: str | None = TEAM) -> pd.Series:
+# Carpeta de salida activa: data/out/<coach_key>/ o data/out/global/. La fija run_export antes de exportar.
+_OUT_DIR = {"path": OUT}
+GLOBAL_DIR = OUT / "global"
+
+
+def set_out_dir(path) -> None:
+    _OUT_DIR["path"] = path
+
+
+def out_dir():
+    return _OUT_DIR["path"]
+
+
+def coach_dir(key: str):
+    return OUT / key
+
+
+def coach_mask(df: pd.DataFrame, coach: str, team: str | None = None) -> pd.Series:
     m = df["coach"] == coach
     return m & (df["team"] == team) if team else m
 
@@ -62,14 +79,15 @@ def _clean(o):
 
 
 def write_json(name: str, payload: dict, definitions: list[str]) -> None:
-    OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / name).parent.mkdir(parents=True, exist_ok=True)
+    base = out_dir()
+    base.mkdir(parents=True, exist_ok=True)
+    (base / name).parent.mkdir(parents=True, exist_ok=True)
     body = {
         "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "definitions": sorted(set(definitions)),
         **payload,
     }
-    with open(OUT / name, "w", encoding="utf-8") as f:
+    with open(base / name, "w", encoding="utf-8") as f:
         json.dump(_clean(body), f, ensure_ascii=False, indent=1)
 
 

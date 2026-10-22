@@ -2,8 +2,8 @@
 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, LabelList, ResponsiveContainer, Legend } from "recharts";
 
-// Dos series (Almada vs liga) por categoría. Almada azul, liga gris. Leyenda siempre presente.
-export default function PairedBars({ data, unit = "%", height = 180, aLabel = "Almada", bLabel = "Liga" }) {
+// Dos series (técnico vs liga) por categoría. Almada azul, liga gris. Leyenda siempre presente.
+export default function PairedBars({ data, unit = "%", height = 180, aLabel = "Técnico", bLabel = "Liga" }) {
   const f = (v) => (v == null ? "–" : unit === "%" ? `${Number(v).toFixed(0)} %` : Number(v).toFixed(3));
   return (
     <div style={{ height }}>

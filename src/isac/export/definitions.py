@@ -42,6 +42,13 @@ def export_definitions() -> None:
         scope = [
             ln.strip("- ").strip() for ln in m.group(1).splitlines() if ln.strip().startswith("-")
         ]
+    # El objeto es genérico: el técnico concreto lo pone el dashboard desde su meta.
+    scope = [
+        "**Objeto**: un técnico de la Liga MX, en todos sus partidos con datos; el equipo que dirigía es un escenario más (D-26b) y el perfil principal es del técnico. Todos los técnicos se miden contra la misma línea base."
+        if s.startswith("**Objeto**")
+        else s
+        for s in scope
+    ]
     write_json(
         "definitions.json",
         {"scope": scope, "definitions": rows},

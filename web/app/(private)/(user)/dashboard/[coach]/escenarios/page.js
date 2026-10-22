@@ -17,11 +17,12 @@ const PILL = "px-3 py-1.5 rounded-full text-sm border transition-colors";
 const ON = "bg-ink text-white border-ink";
 const OFF = "bg-surface text-ink-2 border-line hover:border-ink-3";
 
-export default async function Escenarios({ searchParams }) {
+export default async function Escenarios({ params, searchParams }) {
+  const { coach: key } = await params;
   const sp = await searchParams;
   const escenario = SCENARIOS.some((s) => s.id === sp?.escenario) ? sp.escenario : "localia";
   const bloque = BLOCKS[sp?.bloque] ? sp.bloque : null;
-  const [doc, findings, matches] = await Promise.all([getScenario(escenario), getFindings({ "fields.escenario": escenario }), getMatches()]);
+  const [doc, findings, matches] = await Promise.all([getScenario(key, escenario), getFindings(key, { "fields.escenario": escenario }), getMatches(key)]);
   const meta = SCENARIOS.find((s) => s.id === escenario);
   let cats = (doc?.categories ?? []).filter((c) => c.metrics?.length);
   if (escenario === "torneo") cats = [...cats].sort((a, b) => tournamentKey(a.category) - tournamentKey(b.category));
@@ -44,7 +45,7 @@ export default async function Escenarios({ searchParams }) {
     <>
       <PageHeader question={meta.q} lead="Mismo técnico, distinto contexto. Cada escenario abre con la respuesta y las métricas que más se mueven; el detalle completo está al final." />
       <div className="grid md:grid-cols-[15rem_minmax(0,1fr)] gap-x-10 gap-y-8 items-start">
-        <ScenarioRail active={escenario} bloque={bloque} />
+        <ScenarioRail active={escenario} bloque={bloque} base={`/dashboard/${key}/escenarios`} />
         <div className="min-w-0 space-y-10">
           <section>
             <Board key={escenario} cats={cats} formations={formations} />
@@ -70,7 +71,7 @@ export default async function Escenarios({ searchParams }) {
             </summary>
             <div className="flex flex-wrap gap-2 mt-3 mb-6">
               {blocksHere.map((id) => (
-                <Link key={id} href={`/dashboard/escenarios?escenario=${escenario}&bloque=${id}#explorar`} className={`${PILL} ${id === activeBlock ? ON : OFF}`} scroll={false}>
+                <Link key={id} href={`/dashboard/${key}/escenarios?escenario=${escenario}&bloque=${id}#explorar`} className={`${PILL} ${id === activeBlock ? ON : OFF}`} scroll={false}>
                   {BLOCKS[id]}
                 </Link>
               ))}

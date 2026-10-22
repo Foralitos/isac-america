@@ -3,24 +3,30 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { NAV } from "@/libs/format";
+import { NAV, coachShort, coachYears, listTeams } from "@/libs/coach";
 
-export default function UserSidebar() {
+export default function UserSidebar({ coach }) {
   const pathname = usePathname();
+  const nav = NAV(coach.key);
   return (
     <div className="drawer-side z-40">
       <label htmlFor="user-drawer" className="drawer-overlay" />
       <aside className="w-64 min-h-screen bg-sidebar text-sidebar-ink flex flex-col">
         <div className="px-6 pt-7 pb-6 border-b border-white/10">
-          <Link href="/dashboard" className="block">
-            <p className="text-white font-semibold text-lg leading-tight tracking-tight">Almada por los datos</p>
-            <p className="text-sidebar-ink/70 text-xs mt-1">Santos, Pachuca y América, 2021 a 2026</p>
+          <Link href={`/dashboard/${coach.key}`} className="block">
+            <p className="text-white font-semibold text-lg leading-tight tracking-tight">{coachShort(coach)} por los datos</p>
+            <p className="text-sidebar-ink/70 text-xs mt-1">
+              {listTeams((coach.teams ?? []).map((t) => t.team))}, {coachYears(coach)}
+            </p>
+          </Link>
+          <Link href="/dashboard" className="inline-block mt-3 text-xs text-sidebar-ink/70 hover:text-white underline underline-offset-2">
+            Cambiar de técnico
           </Link>
         </div>
         <nav className="flex-1 px-3 py-4">
           <ul className="space-y-0.5">
-            {NAV.map((item) => {
-              const active = item.href === "/dashboard" ? pathname === item.href : pathname.startsWith(item.href);
+            {nav.map((item) => {
+              const active = item.href === `/dashboard/${coach.key}` ? pathname === item.href : pathname.startsWith(item.href);
               return (
                 <li key={item.href}>
                   <Link

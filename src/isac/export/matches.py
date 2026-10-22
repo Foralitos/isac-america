@@ -36,6 +36,7 @@ def export_matches(rows) -> None:
         "is_home",
         "opponent",
         "opp_coach",
+        "opp_coach_key",
         "opp_top6",
         "opp_final_pos",
         "pos_before",

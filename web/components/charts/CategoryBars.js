@@ -24,7 +24,7 @@ export default function CategoryBars({ data, unit, league }) {
                 <div className="bg-ink text-white text-xs rounded-md px-3 py-2">
                   <p className="font-semibold">{payload[0].payload.label}</p>
                   <p>
-                    Almada {fmt(payload[0].value, unit)}
+                    Técnico {fmt(payload[0].value, unit)}
                     {league != null && <>, liga {fmt(league, unit)}</>}
                   </p>
                   {payload[0].payload.pct != null && <p className="opacity-70">{pctSentence(payload[0].payload.pct)}</p>}

@@ -164,7 +164,7 @@ function groupZones(bundles, keyFn) {
     .sort((a, b) => a.n - b.n);
 }
 
-export default function SetPieceBoard({ board, penalties }) {
+export default function SetPieceBoard({ board, penalties, name = "el técnico" }) {
   const reduce = useReducedMotion();
   const [play, setPlay] = useState("corners");
   const [dir, setDir] = useState("for");
@@ -234,7 +234,7 @@ export default function SetPieceBoard({ board, penalties }) {
   const PILL = (on) => `rounded-full px-3 py-1.5 text-sm transition-colors ${on ? "bg-white text-ink font-semibold" : "bg-white/10 text-white/85 hover:bg-white/20"}`;
   const MINI = (on) => `rounded-full px-3 py-1 text-xs transition-colors ${on ? "bg-white text-ink font-semibold" : "text-white/80 hover:text-white"}`;
   const SEL = "rounded-md bg-white/10 text-white px-2 py-1 text-xs border border-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-almada";
-  const who = dir === "for" ? "Almada" : "el rival";
+  const who = dir === "for" ? name : "el rival";
 
   const headline = () => {
     if (play === "corners")

@@ -7,16 +7,19 @@ import BeforeAfter from "@/components/charts/BeforeAfter";
 import LineupPitch from "@/components/charts/LineupPitch";
 import FormationMini from "@/components/charts/FormationMini";
 import ShapeBoard from "@/components/board/ShapeBoard";
-import { getFindings, getPlayers } from "@/libs/data";
+import { getFindings, getMatches, getPlayers } from "@/libs/data";
 import { STATE_LABEL, STAKES_LABEL, formationLabel, tournamentKey } from "@/libs/format";
 
 export const dynamic = "force-dynamic";
 
 const STATES = ["perdiendo", "empate", "ganando"];
-const TEAM_BY_TOURNAMENT = (t) => (t === "Apertura 2021" ? "Santos Laguna" : t === "Apertura 2026" ? "América" : "Pachuca");
 
-export default async function Jugadores() {
-  const [p, findings] = await Promise.all([getPlayers(), getFindings({ "fields.bloque": "M-5" })]);
+export default async function Jugadores({ params }) {
+  const { coach: key } = await params;
+  const [p, findings, matches] = await Promise.all([getPlayers(key), getFindings(key, { "fields.bloque": "M-5" }), getMatches(key)]);
+  const teamByTournament = {};
+  for (const m of matches) teamByTournament[m.tournament] = m.team;
+  const TEAM_BY_TOURNAMENT = (t) => teamByTournament[t] ?? "";
   if (!p) return <PageHeader question="Sin datos de jugadores publicados." />;
   const n = p.n_matches;
   const firstByStakes = p.subs.first_sub_by_stakes.filter((r) => r.n >= 5).map((r) => ({ label: STAKES_LABEL[r.category] ?? r.label, value: r.mean_minute, n: r.n }));

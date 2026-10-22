@@ -30,7 +30,7 @@ export const SCENARIO_GROUPS = [
   },
   {
     title: "Equipo",
-    items: [{ id: "equipo", label: "Por equipo", q: "¿Qué viaja con Almada y qué depende de la plantilla?", short: "Santos, Pachuca y América" }],
+    items: [{ id: "equipo", label: "Por equipo", q: "¿Qué viaja con el técnico y qué depende de la plantilla?", short: "Equipo por equipo" }],
   },
 ];
 
@@ -108,14 +108,6 @@ export const STAKES_LABEL = {
   liguilla: "Liguilla",
 };
 
-export const NAV = [
-  { href: "/dashboard", label: "Identidad" },
-  { href: "/dashboard/escenarios", label: "Escenarios" },
-  { href: "/dashboard/balon-parado", label: "Balón parado" },
-  { href: "/dashboard/jugadores", label: "Jugadores y cambios" },
-  { href: "/dashboard/partidos", label: "Partidos" },
-  { href: "/dashboard/metodologia", label: "Metodología" },
-];
 
 // Color de una barra de Almada: azul si le favorece, naranja si le pesa, azul plano si solo describe, gris si la muestra es chica.
 export function barColor(d) {

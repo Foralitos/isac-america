@@ -1,4 +1,4 @@
-"""findings.json: hallazgos redactados a mano en analysis/FINDINGS.md.
+"""findings.json: hallazgos redactados a mano en analysis/findings/<coach_key>.md.
 Formato por hallazgo (bloques separados por '### '):
 ### <título>
 - bloque: M-1
@@ -15,13 +15,18 @@ import re
 from isac.config import ROOT
 from isac.export.common import write_json
 
-FINDINGS = ROOT / "analysis" / "FINDINGS.md"
+FINDINGS_DIR = ROOT / "analysis" / "findings"
 
 
-def parse_findings() -> list[dict]:
-    if not FINDINGS.exists():
+def findings_path(coach_key: str):
+    return FINDINGS_DIR / f"{coach_key}.md"
+
+
+def parse_findings(coach_key: str) -> list[dict]:
+    path = findings_path(coach_key)
+    if not path.exists():
         return []
-    txt = FINDINGS.read_text(encoding="utf-8")
+    txt = path.read_text(encoding="utf-8")
     out = []
     for chunk in re.split(r"^### ", txt, flags=re.MULTILINE)[1:]:
         title, _, body = chunk.partition("\n")
@@ -43,7 +48,7 @@ def parse_findings() -> list[dict]:
     return out
 
 
-def export_findings() -> None:
-    rows = parse_findings()
+def export_findings(coach_key: str) -> None:
+    rows = parse_findings(coach_key)
     defs = sorted({d for r in rows for d in r["fields"].get("definiciones", [])})
     write_json("findings.json", {"findings": rows}, defs)

@@ -7,9 +7,9 @@ export default function Home() {
       <div className="max-w-5xl mx-auto px-8 py-20 grid md:grid-cols-[1.2fr_1fr] gap-12 items-end">
         <div>
           <p className="text-sidebar-ink/70 text-sm">Hackathon ISAC 2026, reto Club América</p>
-          <h1 className="text-5xl md:text-7xl font-semibold tracking-tight leading-[0.95] mt-4">Almada por los datos</h1>
+          <h1 className="text-5xl md:text-7xl font-semibold tracking-tight leading-[0.95] mt-4">Técnicos por los datos</h1>
           <p className="text-sidebar-ink/80 text-lg mt-6 max-w-xl leading-relaxed">
-            170 partidos de Guillermo Almada en la Liga MX, con Santos, Pachuca y América, leídos con eventos de StatsBomb: cómo ataca, cómo presiona, qué cambia cuando pierde, cuando va de visita o cuando se juega la liguilla.
+            La historia de un técnico de la Liga MX leída con eventos de StatsBomb: cómo ataca, cómo presiona, qué cambia cuando pierde, cuando va de visita o cuando se juega la liguilla. Elige al técnico y el dashboard se llena con sus partidos.
           </p>
           <Link href="/signin" className="inline-block mt-8 bg-white text-ink px-6 py-3 rounded-md font-medium hover:bg-sidebar-ink">
             Entrar al dashboard

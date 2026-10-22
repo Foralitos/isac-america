@@ -2,7 +2,7 @@ import Link from "next/link";
 import { SCENARIO_GROUPS } from "@/libs/format";
 
 // Las diez preguntas, agrupadas. El activo lleva la regla azul; cada ítem dice en gris de qué va.
-export default function ScenarioRail({ active, bloque }) {
+export default function ScenarioRail({ active, bloque, base = "/dashboard/escenarios" }) {
   return (
     <nav aria-label="Escenarios" className="md:sticky md:top-8 space-y-6">
       {SCENARIO_GROUPS.map((g) => (
@@ -14,7 +14,7 @@ export default function ScenarioRail({ active, bloque }) {
               return (
                 <li key={s.id}>
                   <Link
-                    href={`/dashboard/escenarios?escenario=${s.id}${bloque ? `&bloque=${bloque}` : ""}`}
+                    href={`${base}?escenario=${s.id}${bloque ? `&bloque=${bloque}` : ""}`}
                     aria-current={on ? "page" : undefined}
                     className={`block rounded-md px-3 py-2 border-l-4 transition-colors ${on ? "border-almada bg-surface" : "border-transparent hover:bg-surface/70"}`}
                   >

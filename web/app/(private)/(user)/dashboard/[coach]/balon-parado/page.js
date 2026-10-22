@@ -4,15 +4,18 @@ import Finding from "@/components/ui/Finding";
 import Stat from "@/components/ui/Stat";
 import PairedBars from "@/components/charts/PairedBars";
 import SetPieceBoard from "@/components/board/SetPieceBoard";
-import { getFindings, getSetPieces } from "@/libs/data";
+import { getFindings, getMeta, getSetPieces } from "@/libs/data";
+import { coachShort } from "@/libs/coach";
 
 export const dynamic = "force-dynamic";
 
 const DELIV = { inswinging: "Cerrado", outswinging: "Abierto", corto: "Corto", otro: "Otro" };
 const TYPE = { corner: "Córner", tiro_libre: "Tiro libre indirecto", tiro_libre_directo: "Tiro libre directo", saque_banda: "Saque de banda", penal: "Penal", otro: "Otro" };
 
-export default async function BalonParado() {
-  const [sp, findings] = await Promise.all([getSetPieces(), getFindings({ "fields.bloque": "M-4" })]);
+export default async function BalonParado({ params }) {
+  const { coach: key } = await params;
+  const [sp, findings, meta] = await Promise.all([getSetPieces(key), getFindings(key, { "fields.bloque": "M-4" }), getMeta(key)]);
+  const short = coachShort(meta);
   if (!sp) return <PageHeader question="Sin datos de balón parado publicados." />;
   const c = sp.corners;
   const mix = Object.keys(DELIV).map((k) => ({ label: DELIV[k], a: c.delivery_mix[k] ?? 0, b: c.delivery_mix_league[k] ?? 0 }));
@@ -45,6 +48,7 @@ export default async function BalonParado() {
       {sp.board && (
         <div className="mb-6">
           <SetPieceBoard
+            name={short}
             board={sp.board}
             penalties={{
               for: { n: sp.shots_for.by_type.find((t) => t.sp_type === "penal")?.shots ?? 0, goals: sp.shots_for.by_type.find((t) => t.sp_type === "penal")?.goals ?? 0 },
@@ -57,10 +61,10 @@ export default async function BalonParado() {
 
       <div className="grid md:grid-cols-2 gap-6 mb-6">
         <Card title="Tipo de envío" sub="Porcentaje de córners por tipo de cobro.">
-          <PairedBars data={mix} unit="%" />
+          <PairedBars data={mix} unit="%" aLabel={short} />
         </Card>
         <Card title="Peligro por cada córner según el envío" sub="Goles esperados por cobro, con la liga como referencia. Cerrado: el balón va hacia la portería; abierto: se aleja de ella.">
-          <PairedBars data={xgBy} unit="xg" />
+          <PairedBars data={xgBy} unit="xg" aLabel={short} />
         </Card>
       </div>
 

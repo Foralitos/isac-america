@@ -1,4 +1,11 @@
-"""Entrada: `isac build | metrics | export | all`."""
+"""Entrada: `isac build | metrics | coaches | export | publish | all`.
+
+isac coaches                         técnicos con partidos suficientes (clave, nombre corto, equipos)
+isac export --coach <clave|nombre>   exporta data/out/<clave>/ (y data/out/global/)
+isac export --all                    todos los técnicos con >= MIN_MATCHES partidos
+isac publish --coach <clave>         sube ese técnico a Mongo (+ globales)
+isac publish --all [--clean]         sube todos los exportados; --clean borra claves viejas
+"""
 
 import sys
 import time
@@ -8,6 +15,13 @@ from isac.config import PROCESSED
 
 def log(msg: str) -> None:
     print(f"[{time.strftime('%H:%M:%S')}] {msg}", flush=True)
+
+
+def _opt(args: list[str], name: str) -> str | None:
+    if name in args:
+        i = args.index(name)
+        return args[i + 1] if i + 1 < len(args) else None
+    return None
 
 
 def build(workers: int = 8) -> None:
@@ -50,26 +64,65 @@ def main(argv: list[str] | None = None) -> int:
 
         run_metrics(log=log)
         return 0
-    if cmd == "export":
-        from isac.export.run import run_export
+    if cmd == "coaches":
+        from isac.export.run import list_coaches
 
-        run_export(log=log)
+        for _, r in list_coaches().iterrows():
+            print(
+                f"{r['key']:42s} {r['short']:18s} {r['n']:4d}  {r['teams']}  ({r['desde']:%Y-%m-%d} a {r['hasta']:%Y-%m-%d})"
+            )
+        return 0
+    if cmd == "export":
+        from isac.export.common import load_all
+        from isac.export.run import export_globals, run_export, run_export_all
+
+        if "--all" in args:
+            export_globals(load_all()["mm"], log=log)
+            run_export_all(log=log)
+            return 0
+        coach = _opt(args, "--coach")
+        if not coach:
+            print(__doc__)
+            return 1
+        d = load_all()
+        export_globals(d["mm"], log=log)
+        run_export(coach, log=log, d=d)
         return 0
     if cmd == "publish":
-        from isac.export.mongo import counts, publish
+        from isac.config import slug
+        from isac.export.mongo import (
+            clean_legacy,
+            counts,
+            publish,
+            publish_globals,
+            published_coaches,
+        )
 
-        publish(log=log)
+        publish_globals(log=log)
+        if "--all" in args:
+            for key in published_coaches():
+                publish(key, log=log)
+        else:
+            coach = _opt(args, "--coach")
+            if not coach:
+                print(__doc__)
+                return 1
+            publish(slug(coach) if slug(coach) in published_coaches() else coach, log=log)
+        if "--clean" in args:
+            clean_legacy(log=log)
         counts(log=log)
         return 0
     if cmd == "all":
         build()
-        from isac.export.run import run_export
+        from isac.export.common import load_all
+        from isac.export.run import export_globals, run_export_all
         from isac.metrics.run import run_metrics
 
         run_metrics(log=log)
-        run_export(log=log)
+        export_globals(load_all()["mm"], log=log)
+        run_export_all(log=log)
         return 0
-    print("uso: isac build | metrics | export | publish | all")
+    print(__doc__)
     return 1
 
 

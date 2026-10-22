@@ -1,68 +1,44 @@
-import PageHeader from "@/components/ui/PageHeader";
-import Card from "@/components/ui/Card";
-import Finding from "@/components/ui/Finding";
-import HuellaTiles from "@/components/charts/HuellaTiles";
-import DeltaBars from "@/components/charts/DeltaBars";
-import { getFindings, getMeta, getProfile } from "@/libs/data";
-import { BLOCKS, dateLabel } from "@/libs/format";
+import Link from "next/link";
+import { getCoaches } from "@/libs/data";
+import { coachShort, coachYears, listTeams } from "@/libs/coach";
+import RecordBar from "@/components/ui/RecordBar";
+import PickerFrame from "./PickerFrame";
 
 export const dynamic = "force-dynamic";
 
-export default async function Identidad() {
-  const [meta, profile, findings] = await Promise.all([getMeta(), getProfile(), getFindings()]);
-  if (!profile) {
-    return <PageHeader question="Todavía no hay resultados publicados." lead="Falta publicar los resultados desde el pipeline." />;
-  }
-  const all = Object.values(profile.blocks).flat();
-  const firmas = all
-    .filter((m) => m.pct != null && !m.metric.startsWith("seq_lane") && !m.metric.startsWith("seq_start"))
-    .sort((a, b) => Math.abs(b.pct - 50) - Math.abs(a.pct - 50))
-    .slice(0, 8);
-  const identityFindings = findings.filter((f) => !f.fields?.escenario);
-  const { W, D, L } = profile.record;
+// Elige tu técnico: una tarjeta por técnico publicado. Todo lo demás del dashboard cuelga de la clave que eliges aquí.
+export default async function ElegirTecnico() {
+  const coaches = await getCoaches();
   return (
-    <>
-      <PageHeader
-        question="Así trabaja Almada"
-        lead={`${profile.n_matches} partidos de Liga MX con ${(profile.teams ?? []).map((t) => `${t.team} (${t.n})`).join(", ")}, de ${dateLabel(profile.period?.from)} a ${dateLabel(profile.period?.to)}. Cada dato se compara con lo que hacen los demás equipos de la liga desde 2021 (${meta?.league_units ?? 198} temporadas de equipo).`}
-        aside={
-          <div className="flex gap-6">
-            {[
-              ["Ganados", W],
-              ["Empatados", D],
-              ["Perdidos", L],
-            ].map(([k, v]) => (
-              <div key={k}>
-                <p className="display text-4xl text-ink">{v}</p>
-                <p className="text-xs text-ink-3 mt-1">{k}</p>
+    <PickerFrame>
+      <header className="border-b border-line pb-6 mb-8">
+        <h1 className="display text-3xl md:text-4xl text-ink">Elige al técnico</h1>
+        <p className="text-ink-2 mt-3 text-base md:text-lg leading-relaxed max-w-2xl">
+          Cada técnico se lee con las mismas reglas y contra la misma liga. Elige uno y el dashboard entero se llena con sus partidos.
+        </p>
+      </header>
+      {coaches.length === 0 ? (
+        <p className="text-ink-2">Todavía no hay técnicos publicados.</p>
+      ) : (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {coaches.map((c) => (
+            <Link key={c.key} href={`/dashboard/${c.key}`} className="group bg-surface border border-line rounded-lg p-5 hover:border-almada transition-colors focus-visible:ring-2 focus-visible:ring-almada">
+              <p className="display text-2xl text-ink group-hover:text-almada">{coachShort(c)}</p>
+              <p className="text-xs text-ink-3 mt-0.5">{c.coach}</p>
+              <p className="text-sm text-ink-2 mt-3">
+                {listTeams((c.teams ?? []).map((t) => t.team))}, {coachYears(c)}.
+              </p>
+              <div className="mt-4">
+                <p className="text-sm text-ink mb-1.5">
+                  <span className="display text-xl">{c.n_matches}</span> partidos
+                </p>
+                {c.record && <RecordBar {...c.record} compact />}
               </div>
-            ))}
-          </div>
-        }
-      />
-
-      <section className="mb-10">
-        <h2 className="text-2xl font-semibold tracking-tight text-ink">La huella</h2>
-        <p className="text-sm text-ink-2 mt-1 mb-5">Las ocho cosas que hace más distinto que el resto de la liga. Azul le favorece, naranja le pesa, negro solo describe su estilo.</p>
-        <HuellaTiles rows={firmas} />
-      </section>
-
-      <div className="grid md:grid-cols-2 gap-6 mb-12">
-        {Object.entries(BLOCKS).map(([id, label]) => (
-          <Card key={id} title={label} sub="Cuánto más o menos que la liga hace cada cosa, de mayor a menor diferencia.">
-            <DeltaBars rows={(profile.blocks[id] ?? []).filter((m) => m.pct != null)} />
-          </Card>
-        ))}
-      </div>
-
-      <section>
-        <h2 className="text-2xl font-semibold tracking-tight text-ink mb-5">Lo que define a sus equipos</h2>
-        <div className="grid md:grid-cols-2 gap-x-12 gap-y-9">
-          {identityFindings.map((f) => (
-            <Finding key={f.id} f={f} />
+              {c.n_findings === 0 && <p className="text-[11px] text-ink-3 mt-3">Sin hallazgos redactados todavía: solo cifras.</p>}
+            </Link>
           ))}
         </div>
-      </section>
-    </>
+      )}
+    </PickerFrame>
   );
 }

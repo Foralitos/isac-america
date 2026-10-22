@@ -1,7 +1,7 @@
 import { level, metricLabel, pctSentence, techLabel, valueOnly, valueWithUnit } from "@/libs/words";
 
 // Las métricas donde más se separa de la liga, como tarjetas: cifra grande, una frase, y Almada contra liga en dos barras.
-export default function HuellaTiles({ rows }) {
+export default function HuellaTiles({ rows, name = "Técnico" }) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {rows.map((m) => {
@@ -19,7 +19,7 @@ export default function HuellaTiles({ rows }) {
             </p>
             <div className="mt-auto pt-4 space-y-1.5 text-[11px] text-ink-3">
               <div className="grid grid-cols-[3rem_minmax(0,1fr)_2.5rem] items-center gap-2">
-                <span className="text-ink">Almada</span>
+                <span className="text-ink truncate">{name}</span>
                 <span className="h-2 rounded-sm bg-line-2 overflow-hidden">
                   <span className={`block h-full ${bar}`} style={{ width: `${((m.value ?? 0) / max) * 100}%` }} />
                 </span>
