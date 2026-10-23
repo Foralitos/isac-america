@@ -3,6 +3,8 @@ import Card from "@/components/ui/Card";
 import Finding from "@/components/ui/Finding";
 import HuellaTiles from "@/components/charts/HuellaTiles";
 import DeltaBars from "@/components/charts/DeltaBars";
+import PlayClip from "@/components/ui/PlayClip";
+import { clipFor } from "@/libs/clips";
 import { getFindings, getMeta, getProfile } from "@/libs/data";
 import { coachShort } from "@/libs/coach";
 import { BLOCKS, dateLabel } from "@/libs/format";
@@ -62,9 +64,17 @@ export default async function Identidad({ params }) {
         <h2 className="text-2xl font-semibold tracking-tight text-ink mb-5">Lo que define a sus equipos</h2>
         {identityFindings.length === 0 && <p className="text-ink-2">Todavía no hay hallazgos redactados para {short}; las cifras de arriba son todo el perfil por ahora.</p>}
         <div className="grid md:grid-cols-2 gap-x-12 gap-y-9">
-          {identityFindings.map((f) => (
-            <Finding key={f.id} f={f} />
-          ))}
+          {identityFindings.map((f) => {
+            const clip = clipFor(key, f);
+            if (!clip) return <Finding key={f.id} f={f} />;
+            // Con jugada: ocupa las dos columnas, el hallazgo a la izquierda y el video que lo comprueba a la derecha.
+            return (
+              <div key={f.id} className="md:col-span-2 grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] gap-x-10 gap-y-6 items-start">
+                <Finding f={f} />
+                <PlayClip clip={clip} />
+              </div>
+            );
+          })}
         </div>
       </section>
     </>
