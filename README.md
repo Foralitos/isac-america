@@ -1,10 +1,13 @@
-# isac-america
+# isac-america · Técnicos por los datos
 
 Reto "La historia de un entrenador a través de los datos" del hackathon ISAC 2026 (ITAM + Club América).
-Base multi-técnico: la liga se procesa una vez (`build`, `metrics`) y cada técnico se exporta y publica por separado con su clave `slug(nombre completo)`; el equipo es un escenario más. Hoy: Almada (170 partidos) y el Turco Mohamed (102); mañana los que quieras (`isac coaches`).
-Datos: API de Hudl StatsBomb, Liga MX completa (1,807 partidos). Uso exclusivo para la competencia, no se publican.
 
-Entrega: jueves 22 de octubre de 2026. Entregables: reporte HTML (dashboard Next + HTML estático de respaldo) y video de 5 min.
+- Landing: https://isac-america.vercel.app
+- Reporte (pieza principal, Guillermo Almada): https://isac-america.vercel.app/reporte
+- Dashboard: https://isac-america.vercel.app/dashboard (el acceso del jurado va en el formulario de entrega)
+
+Base multi-técnico: la liga se procesa una vez (`build`, `metrics`) y cada técnico se exporta y publica por separado con su clave `slug(nombre completo)`; el equipo es un escenario más. Publicados: 18 técnicos (`isac coaches` lista el resto).
+Datos: API de Hudl StatsBomb, Liga MX completa (1,807 partidos). Uso exclusivo para la competencia: los datos crudos no están en este repo; la web solo guarda agregados.
 
 ## Flujo
 
@@ -14,7 +17,7 @@ isac build      (Python)  data/processed/    tablas planas parquet: partidos, ev
 isac metrics    (Python)  data/processed/    métricas por bloque x escenario
 isac export     (Python)  data/out/<coach>/  JSON por celda, solo agregados; data/out/global/ definiciones y liga
 isac publish    (Python)  MongoDB Atlas      sube un técnico (--coach) o todos (--all) + globales; registro en `coaches`
-web/            (Next)    dashboard          (pendiente)
+web/            (Next)    landing, reporte y dashboard (lee solo de Mongo)
 ```
 
 ## Estructura
