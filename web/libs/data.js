@@ -66,3 +66,19 @@ export async function getMatches(key) {
 export async function getRivals(key) {
   return strip(await (await db()).collection("rivals").findOne({ _id: `${key}:rivals` }));
 }
+
+export async function getSimulation(key) {
+  return strip(await (await db()).collection("simulation").findOne({ _id: `${key}:simulation` }));
+}
+
+// Un solo partido de la simulación (el documento completo pesa ~1 MB) más el índice para navegar entre listas.
+export async function getSimulationMatch(key, matchId) {
+  const col = (await db()).collection("simulation");
+  const _id = `${key}:simulation`;
+  const [one, index] = await Promise.all([
+    col.findOne({ _id }, { projection: { n_sims: 1, matches: { $elemMatch: { match_id: matchId } } } }),
+    col.findOne({ _id }, { projection: { lists: 1, "matches.match_id": 1, "matches.team": 1 } }),
+  ]);
+  if (!one?.matches?.length) return null;
+  return { n_sims: one.n_sims, match: JSON.parse(JSON.stringify(one.matches[0])), lists: JSON.parse(JSON.stringify(index.lists)), order: index.matches.map((m) => m.match_id), teamOf: Object.fromEntries(index.matches.map((m) => [m.match_id, m.team])) };
+}

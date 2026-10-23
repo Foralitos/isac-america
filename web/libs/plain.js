@@ -24,6 +24,7 @@ export const DEFS = {
   "D-26": { term: "Torneo", corto: "Apertura si el partido fue de julio en adelante, Clausura si no.", diagram: null },
   "D-26b": { term: "Equipo", corto: "Con qué equipo dirigía el técnico ese partido. Cuando dirigió a más de uno, cada equipo es un escenario.", diagram: null },
   "D-27": { term: "Estilo del rival", corto: "Cómo juega el rival comparado con la liga en seis rasgos: si tiene el balón, si presiona arriba, si juega directo, si pega a la contra, si es peligroso a balón parado y si concede poco. Los rivales parecidos son los 20 partidos contra los estilos más cercanos.", diagram: null },
+  "D-28": { term: "Partido simulado", corto: "Cada partido se vuelve a jugar 10,000 veces con las ocasiones que hubo: cada ocasión entra con su probabilidad de gol. Así se ve quién merecía ganar y cuántos puntos merecía cada equipo. Los tiros de una misma jugada cuentan como una sola ocasión.", diagram: null },
   SB: { term: "Métrica de StatsBomb", corto: "Se usa tal como la publica Hudl StatsBomb.", diagram: null },
 };
 
@@ -31,6 +32,7 @@ export const DEF_GROUPS = [
   { title: "Unidades de juego", ids: ["D-01", "D-02", "D-03", "D-04", "D-05", "D-05b", "D-06", "D-07"] },
   { title: "Espacio", ids: ["D-10", "D-11", "D-12", "D-13", "D-14"] },
   { title: "Contexto", ids: ["D-20", "D-21", "D-22", "D-23", "D-24", "D-25", "D-26", "D-26b", "D-27"] },
+  { title: "Simulación", ids: ["D-28"] },
 ];
 
 export function defTerm(id) {

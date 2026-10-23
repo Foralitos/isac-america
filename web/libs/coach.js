@@ -26,5 +26,6 @@ export const NAV = (key) => [
   { href: `/dashboard/${key}/balon-parado`, label: "Balón parado" },
   { href: `/dashboard/${key}/jugadores`, label: "Jugadores y cambios" },
   { href: `/dashboard/${key}/partidos`, label: "Partidos" },
+  { href: `/dashboard/${key}/suerte`, label: "Suerte o dominio" },
   { href: `/dashboard/${key}/rivales`, label: "Rivales" },
 ];

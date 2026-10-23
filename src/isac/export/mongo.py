@@ -22,8 +22,8 @@ from pymongo import MongoClient, UpdateOne
 from isac.config import OUT, ROOT
 from isac.export.common import GLOBAL_DIR, coach_dir
 
-SINGLETONS = ["meta", "profile", "set_pieces", "players", "rivals"]
-MAX_MB_COACH = 3.0
+SINGLETONS = ["meta", "profile", "set_pieces", "players", "rivals", "simulation"]
+MAX_MB_COACH = 4.0  # tamaño del JSON con sangría; en BSON ocupa menos
 GLOBAL_KEY = "global"
 
 
@@ -159,6 +159,7 @@ def clean_legacy(log=print) -> None:
         "set_pieces",
         "players",
         "rivals",
+        "simulation",
         "matches",
         "findings",
         "definitions",

@@ -25,6 +25,7 @@ from isac.export.scenarios import (
     export_state_by_stakes,
 )
 from isac.export.set_pieces import export_set_pieces
+from isac.export.simulation import export_simulation, simulate_league
 from isac.metrics.registry import METRICS
 
 
@@ -153,6 +154,10 @@ def run_export(coach_query: str, log=print, d: dict | None = None) -> str:
     )
     export_matches(rows)
     export_rivals(rows, mm, baseline, d["seg"])
+    if "sim" not in d:
+        log("simulando la liga (D-28)...")
+        d["sim"], d["chances"] = simulate_league(mm)
+    export_simulation(rows, mm, d["sim"], d["chances"])
     export_findings(key)
     chapters = []
     for other_team, g in rows.groupby("team"):
